@@ -1,12 +1,29 @@
 const db = require("../../db/connection");
 const AppError = require("../utils/app-error");
 
-exports.selectArticleById = async (article_id) => {
-  const articleIdNum = parseInt(article_id);
-  if (isNaN(articleIdNum)) {
-    return Promise.reject(AppError.badRequest("Invalid article ID"));
-  }
+exports.selectArticles = async () => {
+  const result = await db.query(
+    `
+    SELECT 
+      articles.author,
+      articles.title,
+      articles.article_id,
+      articles.topic,
+      articles.created_at,
+      articles.votes,
+      articles.article_img_url,
+      COUNT(comments.comment_id)::TEXT AS comment_count
+    FROM articles
+    LEFT JOIN comments ON articles.article_id = comments.article_id
+    GROUP BY articles.article_id
+    ORDER BY articles.created_at DESC;
+    `
+  );
 
+  return result.rows;
+};
+
+exports.selectArticleById = async (article_id) => {
   const result = await db.query(
     `SELECT * FROM articles 
      WHERE article_id = $1;`,
