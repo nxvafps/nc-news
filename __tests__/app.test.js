@@ -114,57 +114,136 @@ describe("app", () => {
     });
   });
 
-  describe("GET /api/articles/:article_id/comments", () => {
-    test("200: responds with an array of comments for the given article_id", async () => {
-      const { body } = await request(app)
-        .get("/api/articles/1/comments")
-        .expect(200);
+  describe("/api/articles/:article_id/comments", () => {
+    describe("GET", () => {
+      test("200: responds with an array of comments for the given article_id", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments")
+          .expect(200);
 
-      expect(Array.isArray(body.comments)).toBe(true);
-      expect(body.comments.length).toBeGreaterThan(0);
+        expect(Array.isArray(body.comments)).toBe(true);
+        expect(body.comments.length).toBeGreaterThan(0);
 
-      body.comments.forEach((comment) => {
-        expect(comment).toMatchObject({
-          comment_id: expect.any(Number),
-          votes: expect.any(Number),
-          created_at: expect.any(String),
-          author: expect.any(String),
-          body: expect.any(String),
-          article_id: 1,
+        body.comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1,
+          });
         });
       });
+
+      test("200: comments are sorted by created_at in descending order", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments")
+          .expect(200);
+
+        expect(body.comments).toBeSortedBy("created_at", { descending: true });
+      });
+
+      test("200: returns empty array for article with no comments", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/2/comments")
+          .expect(200);
+
+        expect(body.comments).toEqual([]);
+      });
+
+      test("404: responds with appropriate error message when article_id does not exist", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/999/comments")
+          .expect(404);
+
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("400: responds with appropriate error message when article_id is invalid", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/not-an-id/comments")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
     });
+    describe("POST", () => {
+      test("201: adds a comment to an article and responds with the posted comment", async () => {
+        const newComment = {
+          username: "butter_bridge",
+          body: "This is a test comment",
+        };
 
-    test("200: comments are sorted by created_at in descending order", async () => {
-      const { body } = await request(app)
-        .get("/api/articles/1/comments")
-        .expect(200);
+        const { body } = await request(app)
+          .post("/api/articles/1/comments")
+          .send(newComment)
+          .expect(201);
 
-      expect(body.comments).toBeSortedBy("created_at", { descending: true });
-    });
+        expect(body.comment).toMatchObject({
+          comment_id: expect.any(Number),
+          body: newComment.body,
+          article_id: 1,
+          author: newComment.username,
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
 
-    test("200: returns empty array for article with no comments", async () => {
-      const { body } = await request(app)
-        .get("/api/articles/2/comments")
-        .expect(200);
+      test("400: responds with error when request body is missing required fields", async () => {
+        const invalidComment = {
+          username: "butter_bridge",
+        };
 
-      expect(body.comments).toEqual([]);
-    });
+        const { body } = await request(app)
+          .post("/api/articles/1/comments")
+          .send(invalidComment)
+          .expect(400);
 
-    test("404: responds with appropriate error message when article_id does not exist", async () => {
-      const { body } = await request(app)
-        .get("/api/articles/999/comments")
-        .expect(404);
+        expect(body.message).toBe("Bad request");
+      });
 
-      expect(body.message).toBe("Article not found");
-    });
+      test("404: responds with error when article_id does not exist", async () => {
+        const newComment = {
+          username: "butter_bridge",
+          body: "This is a test comment",
+        };
 
-    test("400: responds with appropriate error message when article_id is invalid", async () => {
-      const { body } = await request(app)
-        .get("/api/articles/not-an-id/comments")
-        .expect(400);
+        const { body } = await request(app)
+          .post("/api/articles/999/comments")
+          .send(newComment)
+          .expect(404);
 
-      expect(body.message).toBe("Bad request");
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("404: responds with error when username does not exist", async () => {
+        const newComment = {
+          username: "not_a_user",
+          body: "This is a test comment",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles/1/comments")
+          .send(newComment)
+          .expect(404);
+
+        expect(body.message).toBe("Username not found");
+      });
+
+      test("400: responds with error when article_id is invalid", async () => {
+        const newComment = {
+          username: "butter_bridge",
+          body: "This is a test comment",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles/not-an-id/comments")
+          .send(newComment)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
     });
   });
 });

@@ -5,6 +5,8 @@ const AppError = require("./utils/app-error");
 
 const app = express();
 
+app.use(express.json());
+
 app.use("/api", apiRouter);
 
 app.all("*", (req, res, next) => {
