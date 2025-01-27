@@ -89,6 +89,62 @@ describe("app", () => {
         expect(articleWithComments.comment_count).toBe("11");
       });
     });
+
+    describe("GET (queries)", () => {
+      test("200: accepts sort_by query to sort by any valid column", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?sort_by=title")
+          .expect(200);
+
+        expect(body.articles).toBeSortedBy("title", { descending: true });
+      });
+
+      test("200: accepts sort_by query for votes", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?sort_by=votes")
+          .expect(200);
+
+        expect(body.articles).toBeSortedBy("votes", { descending: true });
+      });
+
+      test("200: accepts order query to set sort direction", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?order=asc")
+          .expect(200);
+
+        expect(body.articles).toBeSortedBy("created_at", { ascending: true });
+      });
+
+      test("200: accepts both sort_by and order queries together", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?sort_by=title&order=asc")
+          .expect(200);
+
+        expect(body.articles).toBeSortedBy("title", { ascending: true });
+      });
+
+      test("400: responds with error when sort_by column doesn't exist", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?sort_by=invalid_column")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when order query is invalid", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?order=invalid")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("200: defaults to sorting by created_at desc when no queries provided", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
+
+        expect(body.articles).toBeSortedBy("created_at", { descending: true });
+      });
+    });
   });
 
   describe("/api/articles/:article_id", () => {
