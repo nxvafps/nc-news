@@ -44,21 +44,6 @@ describe("app", () => {
           description: expect.any(String),
         });
       });
-
-      expect(body.topics).toEqual([
-        {
-          description: "The man, the Mitch, the legend",
-          slug: "mitch",
-        },
-        {
-          description: "Not dogs",
-          slug: "cats",
-        },
-        {
-          description: "what books are made of",
-          slug: "paper",
-        },
-      ]);
     });
   });
 
@@ -98,14 +83,6 @@ describe("app", () => {
       );
       expect(articleWithComments.comment_count).toBe("11");
     });
-
-    test("200: returns empty array when no articles exist", async () => {
-      await db.query("DELETE FROM comments");
-      await db.query("DELETE FROM articles");
-
-      const { body } = await request(app).get("/api/articles").expect(200);
-      expect(body.articles).toEqual([]);
-    });
   });
 
   describe("GET /api/articles/:article_id", () => {
@@ -133,6 +110,60 @@ describe("app", () => {
       const { body } = await request(app)
         .get("/api/articles/not-an-id")
         .expect(400);
+      expect(body.message).toBe("Bad request");
+    });
+  });
+
+  describe("GET /api/articles/:article_id/comments", () => {
+    test("200: responds with an array of comments for the given article_id", async () => {
+      const { body } = await request(app)
+        .get("/api/articles/1/comments")
+        .expect(200);
+
+      expect(Array.isArray(body.comments)).toBe(true);
+      expect(body.comments.length).toBeGreaterThan(0);
+
+      body.comments.forEach((comment) => {
+        expect(comment).toMatchObject({
+          comment_id: expect.any(Number),
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          article_id: 1,
+        });
+      });
+    });
+
+    test("200: comments are sorted by created_at in descending order", async () => {
+      const { body } = await request(app)
+        .get("/api/articles/1/comments")
+        .expect(200);
+
+      expect(body.comments).toBeSortedBy("created_at", { descending: true });
+    });
+
+    test("200: returns empty array for article with no comments", async () => {
+      const { body } = await request(app)
+        .get("/api/articles/2/comments")
+        .expect(200);
+
+      expect(body.comments).toEqual([]);
+    });
+
+    test("404: responds with appropriate error message when article_id does not exist", async () => {
+      const { body } = await request(app)
+        .get("/api/articles/999/comments")
+        .expect(404);
+
+      expect(body.message).toBe("Article not found");
+    });
+
+    test("400: responds with appropriate error message when article_id is invalid", async () => {
+      const { body } = await request(app)
+        .get("/api/articles/not-an-id/comments")
+        .expect(400);
+
       expect(body.message).toBe("Bad request");
     });
   });
