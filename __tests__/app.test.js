@@ -333,4 +333,31 @@ describe("app", () => {
       });
     });
   });
+
+  describe("/api/comments/:comment-id", () => {
+    describe("DELETE", () => {
+      test("204: deletes the specified comment and returns no content", async () => {
+        await request(app).delete("/api/comments/1").expect(204);
+
+        const { body } = await request(app)
+          .delete("/api/comments/1")
+          .expect(404);
+        expect(body.message).toBe("Comment not found");
+      });
+
+      test("404: responds with appropriate error message when comment_id does not exist", async () => {
+        const { body } = await request(app)
+          .delete("/api/comments/999")
+          .expect(404);
+        expect(body.message).toBe("Comment not found");
+      });
+
+      test("400: responds with appropriate error message when comment_id is invalid", async () => {
+        const { body } = await request(app)
+          .delete("/api/comments/not-a-number")
+          .expect(400);
+        expect(body.message).toBe("Bad request");
+      });
+    });
+  });
 });
