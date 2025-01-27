@@ -1,7 +1,11 @@
 const db = require("../../db/connection");
 const AppError = require("../utils/app-error");
 
-const selectArticles = async (sort_by = "created_at", order = "desc") => {
+const selectArticles = async (
+  sort_by = "created_at",
+  order = "desc",
+  topic
+) => {
   const validColumns = [
     "article_id",
     "title",
@@ -19,8 +23,7 @@ const selectArticles = async (sort_by = "created_at", order = "desc") => {
     throw AppError.badRequest("Bad request");
   }
 
-  const result = await db.query(
-    `
+  let queryStr = `
     SELECT 
       articles.author,
       articles.title,
@@ -32,11 +35,28 @@ const selectArticles = async (sort_by = "created_at", order = "desc") => {
       COUNT(comments.comment_id)::TEXT AS comment_count
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
-    GROUP BY articles.article_id
-    ORDER BY ${sort_by} ${order}
-    `
-  );
+  `;
 
+  const queryParams = [];
+
+  if (topic) {
+    const topicCheckResult = await db.query(
+      "SELECT * FROM topics WHERE slug = $1",
+      [topic]
+    );
+
+    if (topicCheckResult.rows.length === 0) {
+      throw AppError.notFound("Topic not found");
+    }
+
+    queryStr += " WHERE articles.topic = $1";
+    queryParams.push(topic);
+  }
+
+  queryStr += ` GROUP BY articles.article_id
+    ORDER BY ${sort_by} ${order}`;
+
+  const result = await db.query(queryStr, queryParams);
   return result.rows;
 };
 
