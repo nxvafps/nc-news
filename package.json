@@ -6,8 +6,13 @@
   "scripts": {
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed": "node ./db/seeds/run-seed.js",
+    "setup-all": "NODE_ENV=production docker-compose up -d && npm run setup-dbs && npm run seed-prod && npm run start-prod",
+    "seed-prod": "npm run seed",
+    "start-prod": "node app/listen.js",
     "test": "jest",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "docker-dev": "docker-compose up",
+    "docker-stop": "docker compose down"
   },
   "repository": {
     "type": "git",
