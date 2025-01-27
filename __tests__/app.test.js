@@ -61,3 +61,32 @@ describe("GET /api/topics", () => {
     ]);
   });
 });
+
+describe("GET /api/articles/:article_id", () => {
+  test("200: responds with a single article object with correct properties", async () => {
+    const { body } = await request(app).get("/api/articles/1").expect(200);
+
+    expect(body.article).toMatchObject({
+      article_id: 1,
+      title: "Living in the shadow of a great man",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "I find this existence challenging",
+      created_at: expect.any(String),
+      votes: 100,
+      article_img_url: expect.any(String),
+    });
+  });
+
+  test("404: responds with appropriate error message when article_id does not exist", async () => {
+    const { body } = await request(app).get("/api/articles/999").expect(404);
+    expect(body.message).toBe("Article not found");
+  });
+
+  test("400: responds with appropriate error message when article_id is invalid", async () => {
+    const { body } = await request(app)
+      .get("/api/articles/not-an-id")
+      .expect(400);
+    expect(body.message).toBe("Invalid article ID");
+  });
+});
