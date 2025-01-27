@@ -1,7 +1,24 @@
 const db = require("../../db/connection");
 const AppError = require("../utils/app-error");
 
-const selectArticles = async () => {
+const selectArticles = async (sort_by = "created_at", order = "desc") => {
+  const validColumns = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+  ];
+
+  if (!validColumns.includes(sort_by)) {
+    throw AppError.badRequest("Bad request");
+  }
+
+  if (!["asc", "desc"].includes(order.toLowerCase())) {
+    throw AppError.badRequest("Bad request");
+  }
+
   const result = await db.query(
     `
     SELECT 
@@ -12,11 +29,11 @@ const selectArticles = async () => {
       articles.created_at,
       articles.votes,
       articles.article_img_url,
-      COUNT(comments.comment_id) AS comment_count
+      COUNT(comments.comment_id)::TEXT AS comment_count
     FROM articles
     LEFT JOIN comments ON articles.article_id = comments.article_id
     GROUP BY articles.article_id
-    ORDER BY articles.created_at DESC;
+    ORDER BY ${sort_by} ${order}
     `
   );
 
