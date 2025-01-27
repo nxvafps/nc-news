@@ -31,7 +31,7 @@ const selectArticleById = async (article_id) => {
   );
 
   if (result.rows.length === 0) {
-    return Promise.reject(AppError.notFound("Article not found"));
+    throw AppError.notFound("Article not found");
   }
 
   return result.rows[0];
@@ -67,17 +67,33 @@ const insertArticleComment = async (article_id, username, body) => {
   ]);
 
   if (userResult.rows.length === 0) {
-    return Promise.reject(AppError.notFound("Username not found"));
+    throw AppError.notFound("Username not found");
   }
 
   const result = await db.query(
     `INSERT INTO comments 
-      (body, article_id, author, votes, created_at) 
+      (body, article_id, author) 
      VALUES 
-      ($1, $2, $3, $4, $5)
+      ($1, $2, $3)
      RETURNING *`,
-    [body, article_id, username, 0, new Date()]
+    [body, article_id, username]
   );
+
+  return result.rows[0];
+};
+
+const updateArticleVotesById = async (article_id, inc_votes) => {
+  const result = await db.query(
+    `UPDATE articles
+    SET votes = votes + $1
+    WHERE article_id = $2
+    RETURNING *`,
+    [inc_votes, article_id]
+  );
+
+  if (result.rows.length === 0) {
+    throw AppError.notFound("Article not found");
+  }
 
   return result.rows[0];
 };
@@ -87,4 +103,5 @@ module.exports = {
   selectArticleById,
   selectArticleComments,
   insertArticleComment,
+  updateArticleVotesById,
 };
