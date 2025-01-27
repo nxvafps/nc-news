@@ -57,5 +57,23 @@
         }
       ]
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "adds a new comment to an article",
+    "queries": [],
+    "exampleRequest": {
+      "username": "butter_bridge",
+      "body": "This is a test comment"
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 19,
+        "body": "This is a test comment",
+        "article_id": 1,
+        "author": "butter_bridge",
+        "votes": 0,
+        "created_at": "2024-01-16T12:00:00.000Z"
+      }
+    }
   }
 }

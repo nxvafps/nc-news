@@ -1,7 +1,7 @@
 const db = require("../../db/connection");
 const AppError = require("../utils/app-error");
 
-exports.selectArticles = async () => {
+const selectArticles = async () => {
   const result = await db.query(
     `
     SELECT 
@@ -23,7 +23,7 @@ exports.selectArticles = async () => {
   return result.rows;
 };
 
-exports.selectArticleById = async (article_id) => {
+const selectArticleById = async (article_id) => {
   const result = await db.query(
     `SELECT * FROM articles 
      WHERE article_id = $1;`,
@@ -37,10 +37,8 @@ exports.selectArticleById = async (article_id) => {
   return result.rows[0];
 };
 
-exports.selectArticleComments = async (article_id) => {
-  if (!Number.isInteger(+article_id)) {
-    return Promise.reject(AppError.badRequest("Bad request"));
-  }
+const selectArticleComments = async (article_id) => {
+  await selectArticleById(article_id);
 
   const result = await db.query(
     `
@@ -58,14 +56,35 @@ exports.selectArticleComments = async (article_id) => {
     [article_id]
   );
 
-  const articleExists = await db.query(
-    "SELECT 1 FROM articles WHERE article_id = $1",
-    [article_id]
-  );
+  return result.rows;
+};
 
-  if (articleExists.rows.length === 0) {
-    return Promise.reject(AppError.notFound("Article not found"));
+const insertArticleComment = async (article_id, username, body) => {
+  await selectArticleById(article_id);
+
+  const userResult = await db.query("SELECT * FROM users WHERE username = $1", [
+    username,
+  ]);
+
+  if (userResult.rows.length === 0) {
+    return Promise.reject(AppError.notFound("Username not found"));
   }
 
-  return result.rows;
+  const result = await db.query(
+    `INSERT INTO comments 
+      (body, article_id, author, votes, created_at) 
+     VALUES 
+      ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [body, article_id, username, 0, new Date()]
+  );
+
+  return result.rows[0];
+};
+
+module.exports = {
+  selectArticles,
+  selectArticleById,
+  selectArticleComments,
+  insertArticleComment,
 };
