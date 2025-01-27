@@ -3,7 +3,10 @@ const {
   selectArticleById,
   selectArticleComments,
   insertArticleComment,
+  updateArticleVotesById,
 } = require("../models/article.model");
+
+const AppError = require("../utils/app-error");
 
 exports.getArticles = async (req, res, next) => {
   try {
@@ -43,6 +46,22 @@ exports.postArticleComment = async (req, res, next) => {
   try {
     const comment = await insertArticleComment(article_id, username, body);
     res.status(201).send({ comment });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateArticleVotes = async (req, res, next) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+
+  try {
+    if (typeof inc_votes !== "number") {
+      throw AppError.badRequest("Bad request");
+    }
+
+    const article = await updateArticleVotesById(article_id, inc_votes);
+    res.status(200).send({ article });
   } catch (err) {
     next(err);
   }

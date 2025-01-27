@@ -22,95 +22,182 @@ describe("app", () => {
     });
   });
 
-  describe("GET /api", () => {
-    test("200: Responds with an object detailing the documentation for each endpoint", async () => {
-      const {
-        body: { endpoints },
-      } = await request(app).get("/api").expect(200);
-      expect(endpoints).toEqual(endpointsJson);
+  describe("/api", () => {
+    describe("GET", () => {
+      test("200: Responds with an object detailing the documentation for each endpoint", async () => {
+        const {
+          body: { endpoints },
+        } = await request(app).get("/api").expect(200);
+        expect(endpoints).toEqual(endpointsJson);
+      });
     });
   });
 
-  describe("GET /api/topics", () => {
-    test("200: responds with an array of all topic objects", async () => {
-      const { body } = await request(app).get("/api/topics").expect(200);
+  describe("/api/topics", () => {
+    describe("GET", () => {
+      test("200: responds with an array of all topic objects", async () => {
+        const { body } = await request(app).get("/api/topics").expect(200);
 
-      expect(Array.isArray(body.topics)).toBe(true);
-      expect(body.topics).toHaveLength(3);
+        expect(Array.isArray(body.topics)).toBe(true);
+        expect(body.topics).toHaveLength(3);
 
-      body.topics.forEach((topic) => {
-        expect(topic).toMatchObject({
-          slug: expect.any(String),
-          description: expect.any(String),
+        body.topics.forEach((topic) => {
+          expect(topic).toMatchObject({
+            slug: expect.any(String),
+            description: expect.any(String),
+          });
         });
       });
     });
   });
 
-  describe("GET /api/articles", () => {
-    test("200: responds with an array of article objects with correct properties", async () => {
-      const { body } = await request(app).get("/api/articles").expect(200);
+  describe("/api/articles", () => {
+    describe("GET", () => {
+      test("200: responds with an array of article objects with correct properties", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
 
-      expect(Array.isArray(body.articles)).toBe(true);
-      expect(body.articles.length).toBeGreaterThan(0);
+        expect(Array.isArray(body.articles)).toBe(true);
+        expect(body.articles.length).toBeGreaterThan(0);
 
-      body.articles.forEach((article) => {
-        expect(article).toMatchObject({
-          author: expect.any(String),
-          title: expect.any(String),
-          article_id: expect.any(Number),
-          topic: expect.any(String),
+        body.articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(String),
+          });
+          expect(article).not.toHaveProperty("body");
+        });
+      });
+
+      test("200: articles are sorted by created_at in descending order", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
+
+        expect(body.articles).toBeSortedBy("created_at", { descending: true });
+      });
+
+      test("200: each article has the correct comment count", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
+
+        const articleWithComments = body.articles.find(
+          (article) => article.article_id === 1
+        );
+        expect(articleWithComments.comment_count).toBe("11");
+      });
+    });
+  });
+
+  describe("/api/articles/:article_id", () => {
+    describe("GET", () => {
+      test("200: responds with a single article object with correct properties", async () => {
+        const { body } = await request(app).get("/api/articles/1").expect(200);
+
+        expect(body.article).toMatchObject({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
           created_at: expect.any(String),
-          votes: expect.any(Number),
+          votes: 100,
           article_img_url: expect.any(String),
-          comment_count: expect.any(String),
         });
-        expect(article).not.toHaveProperty("body");
+      });
+
+      test("404: responds with appropriate error message when article_id does not exist", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/999")
+          .expect(404);
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("400: responds with appropriate error message when article_id is invalid", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/not-an-id")
+          .expect(400);
+        expect(body.message).toBe("Bad request");
       });
     });
 
-    test("200: articles are sorted by created_at in descending order", async () => {
-      const { body } = await request(app).get("/api/articles").expect(200);
+    describe("PATCH", () => {
+      test("200: updates article votes and responds with updated article", async () => {
+        const voteUpdate = { inc_votes: 1 };
 
-      expect(body.articles).toBeSortedBy("created_at", { descending: true });
-    });
+        const { body } = await request(app)
+          .patch("/api/articles/1")
+          .send(voteUpdate)
+          .expect(200);
 
-    test("200: each article has the correct comment count", async () => {
-      const { body } = await request(app).get("/api/articles").expect(200);
-
-      const articleWithComments = body.articles.find(
-        (article) => article.article_id === 1
-      );
-      expect(articleWithComments.comment_count).toBe("11");
-    });
-  });
-
-  describe("GET /api/articles/:article_id", () => {
-    test("200: responds with a single article object with correct properties", async () => {
-      const { body } = await request(app).get("/api/articles/1").expect(200);
-
-      expect(body.article).toMatchObject({
-        article_id: 1,
-        title: "Living in the shadow of a great man",
-        topic: "mitch",
-        author: "butter_bridge",
-        body: "I find this existence challenging",
-        created_at: expect.any(String),
-        votes: 100,
-        article_img_url: expect.any(String),
+        expect(body.article).toMatchObject({
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
+          created_at: expect.any(String),
+          votes: 101,
+          article_img_url: expect.any(String),
+        });
       });
-    });
 
-    test("404: responds with appropriate error message when article_id does not exist", async () => {
-      const { body } = await request(app).get("/api/articles/999").expect(404);
-      expect(body.message).toBe("Article not found");
-    });
+      test("200: decrements votes when passed a negative value", async () => {
+        const voteUpdate = { inc_votes: -100 };
 
-    test("400: responds with appropriate error message when article_id is invalid", async () => {
-      const { body } = await request(app)
-        .get("/api/articles/not-an-id")
-        .expect(400);
-      expect(body.message).toBe("Bad request");
+        const { body } = await request(app)
+          .patch("/api/articles/1")
+          .send(voteUpdate)
+          .expect(200);
+
+        expect(body.article.votes).toBe(0);
+      });
+
+      test("400: responds with error when inc_votes is missing", async () => {
+        const invalidVoteUpdate = {};
+
+        const { body } = await request(app)
+          .patch("/api/articles/1")
+          .send(invalidVoteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when inc_votes is not a number", async () => {
+        const invalidVoteUpdate = { inc_votes: "not-a-number" };
+
+        const { body } = await request(app)
+          .patch("/api/articles/1")
+          .send(invalidVoteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("404: responds with error when article_id does not exist", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/articles/999")
+          .send(voteUpdate)
+          .expect(404);
+
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("400: responds with error when article_id is invalid", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/articles/not-an-id")
+          .send(voteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
     });
   });
 
