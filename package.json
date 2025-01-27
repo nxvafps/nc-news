@@ -4,7 +4,7 @@
   "description": "bc-nc-news",
   "main": "index.js",
   "scripts": {
-    "setup-dbs": "PGPASSWORD=$POSTGRES_PASSWORD psql -h $PGHOST -U $POSTGRES_USER -f ./db/setup.sql",
+    "setup-dbs": "docker exec be-nc-news-db-1 psql -U postgres -f /app/db/setup.sql",
     "seed": "node ./db/seeds/run-seed.js",
     "setup-all": "NODE_ENV=production docker-compose up -d && npm run setup-dbs && npm run seed-prod && npm run start-prod",
     "seed-prod": "npm run seed",
