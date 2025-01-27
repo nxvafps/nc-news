@@ -360,4 +360,33 @@ describe("app", () => {
       });
     });
   });
+
+  describe("/api/users", () => {
+    describe("GET", () => {
+      test("200: responds with an array of all user objects", async () => {
+        const { body } = await request(app).get("/api/users").expect(200);
+
+        expect(Array.isArray(body.users)).toBe(true);
+        expect(body.users).toHaveLength(4);
+
+        body.users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+      });
+
+      test("200: user objects contain the correct properties", async () => {
+        const { body } = await request(app).get("/api/users").expect(200);
+
+        expect(body.users[0]).toMatchObject({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url: expect.any(String),
+        });
+      });
+    });
+  });
 });

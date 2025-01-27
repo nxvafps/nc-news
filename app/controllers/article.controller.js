@@ -56,10 +56,6 @@ exports.updateArticleVotes = async (req, res, next) => {
   const { inc_votes } = req.body;
 
   try {
-    if (typeof inc_votes !== "number") {
-      throw AppError.badRequest("Bad request");
-    }
-
     const article = await updateArticleVotesById(article_id, inc_votes);
     res.status(200).send({ article });
   } catch (err) {
