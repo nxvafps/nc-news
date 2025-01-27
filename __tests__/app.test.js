@@ -144,6 +144,45 @@ describe("app", () => {
 
         expect(body.articles).toBeSortedBy("created_at", { descending: true });
       });
+
+      test("200: accepts topic query to filter articles by topic", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=mitch")
+          .expect(200);
+
+        expect(body.articles.length).toBeGreaterThan(0);
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+
+      test("200: returns empty array when topic exists but has no articles", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=paper")
+          .expect(200);
+
+        expect(body.articles).toEqual([]);
+      });
+
+      test("404: responds with error when topic does not exist", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=not-a-topic")
+          .expect(404);
+
+        expect(body.message).toBe("Topic not found");
+      });
+
+      test("200: topic query works with other queries", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=mitch&sort_by=title&order=asc")
+          .expect(200);
+
+        expect(body.articles.length).toBeGreaterThan(0);
+        expect(body.articles).toBeSortedBy("title", { ascending: true });
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
     });
   });
 

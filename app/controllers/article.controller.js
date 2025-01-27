@@ -9,10 +9,10 @@ const {
 const AppError = require("../utils/app-error");
 
 exports.getArticles = async (req, res, next) => {
-  const { sort_by = "created_at", order = "desc" } = req.query;
+  const { sort_by = "created_at", order = "desc", topic } = req.query;
 
   try {
-    const articles = await selectArticles(sort_by, order);
+    const articles = await selectArticles(sort_by, order, topic);
     res.status(200).json({ articles });
   } catch (err) {
     next(err);
