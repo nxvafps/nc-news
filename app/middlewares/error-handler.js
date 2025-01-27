@@ -8,6 +8,13 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  if (err.code === "22P02") {
+    return res.status(400).json({
+      status: "fail",
+      message: "Bad request",
+    });
+  }
+
   console.error("Unexpected error:", err);
 
   res.status(500).json({
