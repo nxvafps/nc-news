@@ -30,3 +30,34 @@ describe("GET /api", () => {
     expect(endpoints).toEqual(endpointsJson);
   });
 });
+
+describe("GET /api/topics", () => {
+  test("200: responds with an array of all topic objects", async () => {
+    const { body } = await request(app).get("/api/topics").expect(200);
+
+    expect(Array.isArray(body.topics)).toBe(true);
+    expect(body.topics).toHaveLength(3);
+
+    body.topics.forEach((topic) => {
+      expect(topic).toMatchObject({
+        slug: expect.any(String),
+        description: expect.any(String),
+      });
+    });
+
+    expect(body.topics).toEqual([
+      {
+        description: "The man, the Mitch, the legend",
+        slug: "mitch",
+      },
+      {
+        description: "Not dogs",
+        slug: "cats",
+      },
+      {
+        description: "what books are made of",
+        slug: "paper",
+      },
+    ]);
+  });
+});
