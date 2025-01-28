@@ -63,7 +63,7 @@ const selectArticles = async (
 const selectArticleById = async (article_id) => {
   const result = await db.query(
     `SELECT articles.*, 
-      CAST(COUNT(comments.comment_id) AS VARCHAR) AS comment_count
+      COUNT(comments.comment_id)::INTEGER AS comment_count
      FROM articles 
      LEFT JOIN comments ON articles.article_id = comments.article_id
      WHERE articles.article_id = $1
