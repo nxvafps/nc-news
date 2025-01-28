@@ -4,6 +4,7 @@ const {
   selectArticleComments,
   insertArticleComment,
   updateArticleVotesById,
+  insertArticle,
 } = require("../models/article.model");
 
 const AppError = require("../utils/app-error");
@@ -60,6 +61,23 @@ exports.updateArticleVotes = async (req, res, next) => {
   try {
     const article = await updateArticleVotesById(article_id, inc_votes);
     res.status(200).send({ article });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postArticle = async (req, res, next) => {
+  const { author, title, body, topic, article_img_url } = req.body;
+
+  try {
+    const article = await insertArticle(
+      author,
+      title,
+      body,
+      topic,
+      article_img_url
+    );
+    res.status(201).json({ article });
   } catch (err) {
     next(err);
   }

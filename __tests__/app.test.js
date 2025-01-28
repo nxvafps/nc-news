@@ -184,6 +184,115 @@ describe("app", () => {
         });
       });
     });
+
+    describe("POST", () => {
+      test("201: adds a new article and responds with the posted article", async () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(201);
+
+        expect(body.article).toMatchObject({
+          article_id: expect.any(Number),
+          author: newArticle.author,
+          title: newArticle.title,
+          body: newArticle.body,
+          topic: newArticle.topic,
+          article_img_url: expect.any(String),
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: 0,
+        });
+      });
+
+      test("201: sets default article_img_url when not provided", async () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(201);
+
+        expect(body.article.article_img_url).toEqual(expect.any(String));
+      });
+
+      test("201: accepts custom article_img_url", async () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+          article_img_url: "https://test-image.jpg",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(201);
+
+        expect(body.article.article_img_url).toBe(newArticle.article_img_url);
+      });
+
+      test("400: responds with error when request body is missing required fields", async () => {
+        const invalidArticle = {
+          author: "butter_bridge",
+          // missing title
+          body: "This is a test article",
+          topic: "cats",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send(invalidArticle)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("404: responds with error when author does not exist", async () => {
+        const newArticle = {
+          author: "not_a_user",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(404);
+
+        expect(body.message).toBe("Author not found");
+      });
+
+      test("404: responds with error when topic does not exist", async () => {
+        const newArticle = {
+          author: "butter_bridge",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "not_a_topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(404);
+
+        expect(body.message).toBe("Topic not found");
+      });
+    });
   });
 
   describe("/api/articles/:article_id", () => {
