@@ -32,6 +32,24 @@ describe("app", () => {
         expect(endpoints).toEqual(endpointsJson);
       });
     });
+    describe("POST", () => {
+      test("405: responds with error for POST method", async () => {
+        const { body } = await request(app).post("/api").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("PATCH", () => {
+      test("405: responds with error for PATCH method", async () => {
+        const { body } = await request(app).patch("/api").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("DELETE", () => {
+      test("405: responds with error for DELETE method", async () => {
+        const { body } = await request(app).delete("/api").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
   });
 
   describe("/api/topics", () => {
@@ -120,6 +138,18 @@ describe("app", () => {
           .expect(400);
 
         expect(body.message).toBe("Bad request");
+      });
+    });
+    describe("PATCH", () => {
+      test("405: responds with error for PATCH method", async () => {
+        const { body } = await request(app).patch("/api/topics").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("DELETE", () => {
+      test("405: responds with error for DELETE method", async () => {
+        const { body } = await request(app).delete("/api/topics").expect(405);
+        expect(body.message).toBe("Method not allowed");
       });
     });
   });
@@ -464,6 +494,20 @@ describe("app", () => {
         expect(body.message).toBe("Topic not found");
       });
     });
+
+    describe("PATCH", () => {
+      test("405: responds with error for PATCH method", async () => {
+        const { body } = await request(app).patch("/api/articles").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+
+    describe("DELETE", () => {
+      test("405: responds with error for DELETE method", async () => {
+        const { body } = await request(app).delete("/api/articles").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
   });
 
   describe("/api/articles/:article_id", () => {
@@ -502,6 +546,13 @@ describe("app", () => {
           .get("/api/articles/not-an-id")
           .expect(400);
         expect(body.message).toBe("Bad request");
+      });
+    });
+
+    describe("POST", () => {
+      test("405: responds with error for POST method", async () => {
+        const { body } = await request(app).post("/api/articles/1").expect(405);
+        expect(body.message).toBe("Method not allowed");
       });
     });
 
@@ -838,9 +889,39 @@ describe("app", () => {
         expect(body.message).toBe("Bad request");
       });
     });
+
+    describe("PATCH", () => {
+      test("405: responds with error for PATCH method", async () => {
+        const { body } = await request(app)
+          .patch("/api/articles/1/comments")
+          .expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+
+    describe("DELETE", () => {
+      test("405: responds with error for DELETE method", async () => {
+        const { body } = await request(app)
+          .delete("/api/articles/1/comments")
+          .expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
   });
 
   describe("/api/comments/:comment-id", () => {
+    describe("GET", () => {
+      test("405: responds with error for GET method", async () => {
+        const { body } = await request(app).get("/api/comments/1").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("POST", () => {
+      test("405: responds with error for POST method", async () => {
+        const { body } = await request(app).post("/api/comments/1").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
     describe("PATCH", () => {
       test("200: updates comment votes and responds with updated comment", async () => {
         const voteUpdate = { inc_votes: 1 };
@@ -915,7 +996,6 @@ describe("app", () => {
         expect(body.message).toBe("Bad request");
       });
     });
-
     describe("DELETE", () => {
       test("204: deletes the specified comment and returns no content", async () => {
         await request(app).delete("/api/comments/1").expect(204);
@@ -969,6 +1049,24 @@ describe("app", () => {
         });
       });
     });
+    describe("POST", () => {
+      test("405: responds with error for POST method", async () => {
+        const { body } = await request(app).post("/api/users").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("PATCH", () => {
+      test("405: responds with error for PATCH method", async () => {
+        const { body } = await request(app).patch("/api/users").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("DELETE", () => {
+      test("405: responds with error for DELETE method", async () => {
+        const { body } = await request(app).delete("/api/users").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
   });
 
   describe("/api/users/:username", () => {
@@ -992,6 +1090,28 @@ describe("app", () => {
           .expect(404);
 
         expect(body.message).toBe("User not found");
+      });
+    });
+    describe("POST", () => {
+      test("405: responds with error for POST method", async () => {
+        const { body } = await request(app).post("/api/users/name").expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("PATCH", () => {
+      test("405: responds with error for PATCH method", async () => {
+        const { body } = await request(app)
+          .patch("/api/users/name")
+          .expect(405);
+        expect(body.message).toBe("Method not allowed");
+      });
+    });
+    describe("DELETE", () => {
+      test("405: responds with error for DELETE method", async () => {
+        const { body } = await request(app)
+          .delete("/api/users/name")
+          .expect(405);
+        expect(body.message).toBe("Method not allowed");
       });
     });
   });

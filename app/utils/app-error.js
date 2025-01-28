@@ -23,6 +23,10 @@ class AppError extends Error {
   static conflict(message) {
     return new AppError(message, 409);
   }
+
+  static methodNotAllowed(message) {
+    return new AppError(message || "Method not allowed", 405);
+  }
 }
 
 module.exports = AppError;
