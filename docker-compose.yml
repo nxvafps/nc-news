@@ -16,7 +16,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm start-prod
+    command: sh -c "npm run setup-dbs && npm run seed && node app/listen.js"
 
   db:
     image: postgres:15-alpine

@@ -8,7 +8,7 @@
     "seed": "node ./db/seeds/run-seed.js",
     "setup-all": "NODE_ENV=production docker-compose up -d && npm run setup-dbs && npm run seed-prod && npm run start-prod",
     "seed-prod": "npm run seed",
-    "start-prod": "node app/listen.js",
+    "start-prod": "docker-compose up -d",
     "test": "jest",
     "prepare": "husky install",
     "docker-dev": "docker-compose up",
