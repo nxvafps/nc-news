@@ -1,24 +1,98 @@
 # Northcoders News API
 
-## Setup Instructions
+## Project Summary
 
-### Environment Variables
+Northcoders News API is a RESTful API that provides news articles, comments, and user information. It allows users to interact with the data by performing CRUD operations (Create, Read, Update, Delete).
 
-To run this project locally, you will need to create two `.env` files in the root directory:
+## 🚀 Hosted Version
 
-1. `.env.development`
+Live API: [ncnews.novafps.com/api](http://ncnews.novafps.com/api)
 
-2. `.env.test`
+## 🛠️ Tech Stack
 
-These environment variables are essential for connecting to the correct database depending on whether you are running tests or running the development environment.
+- Node.js
+- Express.js
+- PostgreSQL
+- Docker (Hosting)
+- Jest (Testing)
+- Supertest (API Testing)
 
-### Installation
+## ⚙️ Prerequisites
 
-1. Clone this repository
-2. Install dependencies by running `npm install`
-3. Create the environment variable files as described above
-4. Set up the databases with `npm run setup-dbs`
-5. Seed the database with `npm run seed`
+- Node.js >= 14.0.0
+- PostgreSQL >= 12.0.0
+
+## 🔧 Installation & Setup
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/nxvafps/nc-news.git
+cd nc-news
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create environment files:
+
+Create two files in the root directory:
+
+- `.env.development`
+- `.env.test`
+
+Add the following content:
+
+`.env.development`:
+
+```
+PGDATABASE=your_development_db
+```
+
+`.env.test`:
+
+```
+PGDATABASE=your_test_db
+```
+
+4. Setup and seed database:
+
+```bash
+npm run setup-dbs
+npm run seed
+```
+
+## 🚦 Available Scripts
+
+- `npm start` - Start the server
+- `npm test` - Run tests
+- `npm run seed` - Seed the database
+- `npm run setup-dbs` - Reset the databases
+
+## 📚 API Documentation
+
+Available endpoints:
+
+- GET /api/topics
+- GET /api/articles
+- GET /api/articles/:article_id
+- PATCH /api/articles/:article_id
+- GET /api/articles/:article_id/comments
+- POST /api/articles/:article_id/comments
+- DELETE /api/comments/:comment_id
+
+For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api)
+
+## 🧪 Testing
+
+Run the test suite:
+
+```bash
+npm test
+```
 
 ---
 
