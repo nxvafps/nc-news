@@ -10,11 +10,31 @@ const {
 const AppError = require("../utils/app-error");
 
 exports.getArticles = async (req, res, next) => {
-  const { sort_by = "created_at", order = "desc", topic } = req.query;
+  const {
+    sort_by = "created_at",
+    order = "desc",
+    topic,
+    limit = 10,
+    p = 1,
+  } = req.query;
 
   try {
-    const articles = await selectArticles(sort_by, order, topic);
-    res.status(200).json({ articles });
+    const page = parseInt(p);
+    const limitNum = parseInt(limit);
+
+    if (isNaN(page) || isNaN(limitNum) || page < 1 || limitNum < 1) {
+      throw AppError.badRequest("Bad request");
+    }
+
+    const { articles, total_count } = await selectArticles(
+      sort_by,
+      order,
+      topic,
+      limitNum,
+      page
+    );
+
+    res.status(200).json({ articles, total_count });
   } catch (err) {
     next(err);
   }

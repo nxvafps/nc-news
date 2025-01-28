@@ -4,23 +4,48 @@ const AppError = require("../utils/app-error");
 const selectArticles = async (
   sort_by = "created_at",
   order = "desc",
-  topic
+  topic,
+  limit = 10,
+  page = 1
 ) => {
   const validColumns = [
-    "article_id",
     "title",
     "topic",
     "author",
     "created_at",
     "votes",
+    "comment_count",
   ];
+  const validOrders = ["asc", "desc"];
 
-  if (!validColumns.includes(sort_by)) {
+  if (!validColumns.includes(sort_by) || !validOrders.includes(order)) {
     throw AppError.badRequest("Bad request");
   }
 
-  if (!["asc", "desc"].includes(order.toLowerCase())) {
+  const limitNum = parseInt(limit);
+  const pageNum = parseInt(page);
+  if (isNaN(limitNum) || isNaN(pageNum) || limitNum < 1 || pageNum < 1) {
     throw AppError.badRequest("Bad request");
+  }
+
+  if (topic) {
+    const topicResult = await db.query("SELECT * FROM topics WHERE slug = $1", [
+      topic,
+    ]);
+    if (topicResult.rows.length === 0) {
+      throw AppError.notFound("Topic not found");
+    }
+
+    const articleCheck = await db.query(
+      "SELECT 1 FROM articles WHERE topic = $1 LIMIT 1",
+      [topic]
+    );
+    if (articleCheck.rows.length === 0) {
+      return {
+        articles: [],
+        total_count: 0,
+      };
+    }
   }
 
   let queryStr = `
@@ -40,24 +65,39 @@ const selectArticles = async (
   const queryParams = [];
 
   if (topic) {
-    const topicCheckResult = await db.query(
-      "SELECT * FROM topics WHERE slug = $1",
-      [topic]
-    );
-
-    if (topicCheckResult.rows.length === 0) {
-      throw AppError.notFound("Topic not found");
-    }
-
     queryStr += " WHERE articles.topic = $1";
     queryParams.push(topic);
   }
 
-  queryStr += ` GROUP BY articles.article_id
-    ORDER BY ${sort_by} ${order}`;
+  const countQuery = `
+    SELECT COUNT(*) AS count 
+    FROM articles
+    ${topic ? "WHERE topic = $1" : ""}
+`;
+
+  const countResult = await db.query(countQuery, topic ? [topic] : []);
+  const total_count = parseInt(countResult.rows[0].count);
+
+  queryStr += ` GROUP BY articles.article_id`;
+
+  if (sort_by === "comment_count") {
+    queryStr += ` ORDER BY CAST(comment_count AS INT) ${order}`;
+  } else {
+    queryStr += ` ORDER BY articles.${sort_by} ${order}`;
+  }
+
+  const offset = (pageNum - 1) * limitNum;
+  queryStr += ` LIMIT $${queryParams.length + 1} OFFSET $${
+    queryParams.length + 2
+  }`;
+  queryParams.push(limitNum, offset);
 
   const result = await db.query(queryStr, queryParams);
-  return result.rows;
+
+  return {
+    articles: result.rows,
+    total_count,
+  };
 };
 
 const selectArticleById = async (article_id) => {
