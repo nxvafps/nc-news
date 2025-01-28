@@ -77,6 +77,7 @@ npm run seed
 Available endpoints:
 
 - GET /api/topics
+- POST /api/topics
 - GET /api/articles
 - POST /api/articles
 - GET /api/articles/:article_id

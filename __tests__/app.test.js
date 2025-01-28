@@ -50,6 +50,78 @@ describe("app", () => {
         });
       });
     });
+    describe("POST", () => {
+      test("201: adds a new topic and responds with the posted topic", async () => {
+        const newTopic = {
+          slug: "test-topic",
+          description: "This is a test topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send(newTopic)
+          .expect(201);
+
+        expect(body.topic).toMatchObject({
+          slug: newTopic.slug,
+          description: newTopic.description,
+        });
+
+        const { body: getBody } = await request(app)
+          .get("/api/topics")
+          .expect(200);
+        expect(getBody.topics).toContainEqual(newTopic);
+      });
+
+      test("400: responds with error when request body is missing required fields", async () => {
+        const invalidTopic = {
+          slug: "test-topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send(invalidTopic)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when slug is missing", async () => {
+        const invalidTopic = {
+          description: "This is a test topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send(invalidTopic)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("409: responds with error when topic slug already exists", async () => {
+        const existingTopic = {
+          slug: "mitch",
+          description: "This is a duplicate topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send(existingTopic)
+          .expect(409);
+
+        expect(body.message).toBe("Topic already exists");
+      });
+
+      test("400: responds with error when request body is empty", async () => {
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send({})
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
   });
 
   describe("/api/articles", () => {
