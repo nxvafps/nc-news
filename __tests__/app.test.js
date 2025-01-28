@@ -206,8 +206,8 @@ describe("app", () => {
       test("200: article response includes accurate comment_count", async () => {
         const { body } = await request(app).get("/api/articles/1").expect(200);
 
-        expect(body.article.comment_count).toBe("11");
-        expect(typeof body.article.comment_count).toBe("string");
+        expect(body.article.comment_count).toBe(11);
+        expect(typeof body.article.comment_count).toBe("number");
       });
 
       test("404: responds with appropriate error message when article_id does not exist", async () => {
@@ -488,6 +488,31 @@ describe("app", () => {
           name: "jonny",
           avatar_url: expect.any(String),
         });
+      });
+    });
+  });
+
+  describe("/api/users/:username", () => {
+    describe("GET", () => {
+      test("200: responds with a user object with correct properties", async () => {
+        const { body } = await request(app)
+          .get("/api/users/butter_bridge")
+          .expect(200);
+
+        expect(body.user).toMatchObject({
+          username: "butter_bridge",
+          name: "jonny",
+          avatar_url:
+            "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+        });
+      });
+
+      test("404: responds with appropriate error message when username does not exist", async () => {
+        const { body } = await request(app)
+          .get("/api/users/not-a-user")
+          .expect(404);
+
+        expect(body.message).toBe("User not found");
       });
     });
   });
