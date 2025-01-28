@@ -19,6 +19,10 @@ class AppError extends Error {
   static internal(message) {
     return new AppError(message || "Internal server error", 500);
   }
+
+  static conflict(message) {
+    return new AppError(message, 409);
+  }
 }
 
 module.exports = AppError;
