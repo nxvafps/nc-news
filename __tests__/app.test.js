@@ -437,6 +437,81 @@ describe("app", () => {
   });
 
   describe("/api/comments/:comment-id", () => {
+    describe("PATCH", () => {
+      test("200: updates comment votes and responds with updated comment", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .send(voteUpdate)
+          .expect(200);
+
+        expect(body.comment).toMatchObject({
+          comment_id: 1,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 17,
+          author: "butter_bridge",
+          article_id: 9,
+          created_at: expect.any(String),
+        });
+      });
+
+      test("200: decrements votes when passed a negative value", async () => {
+        const voteUpdate = { inc_votes: -10 };
+
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .send(voteUpdate)
+          .expect(200);
+
+        expect(body.comment.votes).toBe(6);
+      });
+
+      test("400: responds with error when inc_votes is missing", async () => {
+        const invalidVoteUpdate = {};
+
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .send(invalidVoteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when inc_votes is not a number", async () => {
+        const invalidVoteUpdate = { inc_votes: "not-a-number" };
+
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .send(invalidVoteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("404: responds with error when comment_id does not exist", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/comments/999")
+          .send(voteUpdate)
+          .expect(404);
+
+        expect(body.message).toBe("Comment not found");
+      });
+
+      test("400: responds with error when comment_id is invalid", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/comments/not-a-number")
+          .send(voteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
+
     describe("DELETE", () => {
       test("204: deletes the specified comment and returns no content", async () => {
         await request(app).delete("/api/comments/1").expect(204);
