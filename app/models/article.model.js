@@ -231,6 +231,31 @@ const insertArticle = async (author, title, body, topic, article_img_url) => {
   return article;
 };
 
+const removeArticleById = async (article_id) => {
+  await selectArticleById(article_id);
+
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query("DELETE FROM comments WHERE article_id = $1", [
+      article_id,
+    ]);
+
+    await client.query("DELETE FROM articles WHERE article_id = $1", [
+      article_id,
+    ]);
+
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   selectArticles,
   selectArticleById,
@@ -238,4 +263,5 @@ module.exports = {
   insertArticleComment,
   updateArticleVotesById,
   insertArticle,
+  removeArticleById,
 };
