@@ -185,6 +185,104 @@ describe("app", () => {
       });
     });
 
+    describe("GET (pagination)", () => {
+      test("200: defaults to limit of 10 articles per page", async () => {
+        const { body } = await request(app).get("/api/articles").expect(200);
+
+        expect(body.articles).toHaveLength(10);
+        expect(body.total_count).toBe(13);
+      });
+
+      test("200: accepts limit query to change number of articles per page", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=5")
+          .expect(200);
+
+        expect(body.articles).toHaveLength(5);
+        expect(body.total_count).toBe(13);
+      });
+
+      test("200: accepts page query to get specific page of results", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?p=2&limit=5")
+          .expect(200);
+
+        expect(body.articles).toHaveLength(5);
+        expect(body.total_count).toBe(13);
+        expect(body.articles[0].article_id).not.toBe(1);
+      });
+
+      test("200: returns correct number of articles on last page", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?p=3&limit=5")
+          .expect(200);
+
+        expect(body.articles).toHaveLength(3);
+        expect(body.total_count).toBe(13);
+      });
+
+      test("200: works with existing sort and filter queries", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?topic=mitch&sort_by=title&order=asc&limit=5&p=1")
+          .expect(200);
+
+        expect(body.articles).toHaveLength(5);
+        expect(body.articles).toBeSortedBy("title", { ascending: true });
+        body.articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+
+      test("200: returns empty array when page number is too high", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?p=999&limit=5")
+          .expect(200);
+
+        expect(body.articles).toEqual([]);
+        expect(body.total_count).toBe(13);
+      });
+
+      test("400: responds with error when limit is not a number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=not-a-number")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when page is not a number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?p=not-a-number")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when limit is negative", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=-5")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when page is negative", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?p=-1")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when limit is zero", async () => {
+        const { body } = await request(app)
+          .get("/api/articles?limit=0")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
+
     describe("POST", () => {
       test("201: adds a new article and responds with the posted article", async () => {
         const newArticle = {
