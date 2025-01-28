@@ -118,8 +118,26 @@ const selectArticleById = async (article_id) => {
   return result.rows[0];
 };
 
-const selectArticleComments = async (article_id) => {
+const selectArticleComments = async (article_id, limit = 10, page = 1) => {
   await selectArticleById(article_id);
+
+  const limitNum = parseInt(limit);
+  const pageNum = parseInt(page);
+
+  if (isNaN(limitNum) || isNaN(pageNum) || limitNum < 1 || pageNum < 1) {
+    throw AppError.badRequest("Bad request");
+  }
+
+  const offset = (pageNum - 1) * limitNum;
+
+  const countResult = await db.query(
+    `SELECT COUNT(*) AS total_count 
+     FROM comments 
+     WHERE article_id = $1`,
+    [article_id]
+  );
+
+  const total_count = parseInt(countResult.rows[0].total_count);
 
   const result = await db.query(
     `
@@ -132,12 +150,16 @@ const selectArticleComments = async (article_id) => {
       article_id
     FROM comments 
     WHERE article_id = $1
-    ORDER BY created_at DESC;
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3;
     `,
-    [article_id]
+    [article_id, limitNum, offset]
   );
 
-  return result.rows;
+  return {
+    comments: result.rows,
+    total_count,
+  };
 };
 
 const insertArticleComment = async (article_id, username, body) => {

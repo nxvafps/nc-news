@@ -12,6 +12,7 @@ beforeEach(() => {
 afterAll(() => {
   db.end();
 });
+
 describe("app", () => {
   describe("invalid route", () => {
     it("should respond with a status code of 404 when given an invalid route", async () => {
@@ -564,6 +565,95 @@ describe("app", () => {
         expect(body.message).toBe("Bad request");
       });
     });
+
+    describe("GET (pagination)", () => {
+      test("200: defaults to limit of 10 comments per page", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments")
+          .expect(200);
+
+        expect(body.comments).toHaveLength(10);
+        expect(body.total_count).toBe(11);
+      });
+
+      test("200: accepts limit query to change number of comments per page", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?limit=5")
+          .expect(200);
+
+        expect(body.comments).toHaveLength(5);
+        expect(body.total_count).toBe(11);
+      });
+
+      test("200: accepts page query to get specific page of results", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?p=2&limit=5")
+          .expect(200);
+
+        expect(body.comments).toHaveLength(5);
+        expect(body.total_count).toBe(11);
+        expect(body.comments[0].comment_id).not.toBe(1);
+      });
+
+      test("200: returns correct number of comments on last page", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?p=3&limit=5")
+          .expect(200);
+
+        expect(body.comments).toHaveLength(1);
+        expect(body.total_count).toBe(11);
+      });
+
+      test("200: returns empty array when page number is too high", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?p=999&limit=5")
+          .expect(200);
+
+        expect(body.comments).toEqual([]);
+        expect(body.total_count).toBe(11);
+      });
+
+      test("400: responds with error when limit is not a number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?limit=not-a-number")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when page is not a number", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?p=not-a-number")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when limit is negative", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?limit=-5")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when page is negative", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?p=-1")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when limit is zero", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/1/comments?limit=0")
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
+
     describe("POST", () => {
       test("201: adds a comment to an article and responds with the posted comment", async () => {
         const newComment = {
