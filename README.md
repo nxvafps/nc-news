@@ -78,11 +78,15 @@ Available endpoints:
 
 - GET /api/topics
 - GET /api/articles
+- POST /api/articles
 - GET /api/articles/:article_id
 - PATCH /api/articles/:article_id
 - GET /api/articles/:article_id/comments
 - POST /api/articles/:article_id/comments
+- PATCH /api/comments/:comment_id
 - DELETE /api/comments/:comment_id
+- GET /api/users
+- GET /api/users/:username
 
 For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api)
 

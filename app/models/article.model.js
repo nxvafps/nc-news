@@ -139,10 +139,41 @@ const updateArticleVotesById = async (article_id, inc_votes) => {
   return result.rows[0];
 };
 
+const insertArticle = async (author, title, body, topic, article_img_url) => {
+  const userResult = await db.query("SELECT * FROM users WHERE username = $1", [
+    author,
+  ]);
+  if (userResult.rows.length === 0) {
+    throw AppError.notFound("Author not found");
+  }
+
+  const topicResult = await db.query("SELECT * FROM topics WHERE slug = $1", [
+    topic,
+  ]);
+  if (topicResult.rows.length === 0) {
+    throw AppError.notFound("Topic not found");
+  }
+
+  const result = await db.query(
+    `INSERT INTO articles 
+      (author, title, body, topic, article_img_url) 
+    VALUES 
+      ($1, $2, $3, $4, COALESCE($5, 'https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700'))
+    RETURNING *`,
+    [author, title, body, topic, article_img_url]
+  );
+
+  const article = result.rows[0];
+  article.comment_count = 0;
+
+  return article;
+};
+
 module.exports = {
   selectArticles,
   selectArticleById,
   selectArticleComments,
   insertArticleComment,
   updateArticleVotesById,
+  insertArticle,
 };
