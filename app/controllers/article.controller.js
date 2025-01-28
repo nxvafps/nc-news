@@ -5,6 +5,7 @@ const {
   insertArticleComment,
   updateArticleVotesById,
   insertArticle,
+  removeArticleById,
 } = require("../models/article.model");
 
 const AppError = require("../utils/app-error");
@@ -103,6 +104,17 @@ exports.postArticle = async (req, res, next) => {
       article_img_url
     );
     res.status(201).json({ article });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteArticleById = async (req, res, next) => {
+  const { article_id } = req.params;
+
+  try {
+    await removeArticleById(article_id);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

@@ -581,6 +581,41 @@ describe("app", () => {
         expect(body.message).toBe("Bad request");
       });
     });
+
+    describe("DELETE", () => {
+      test("204: deletes the specified article and its comments and returns no content", async () => {
+        const { body: articleBody } = await request(app)
+          .get("/api/articles/1")
+          .expect(200);
+        expect(articleBody.article.comment_count).toBe(11);
+
+        await request(app).delete("/api/articles/1").expect(204);
+
+        const { body: notFoundBody } = await request(app)
+          .get("/api/articles/1")
+          .expect(404);
+        expect(notFoundBody.message).toBe("Article not found");
+
+        const { body: commentsBody } = await request(app)
+          .get("/api/articles/1/comments")
+          .expect(404);
+        expect(commentsBody.message).toBe("Article not found");
+      });
+
+      test("404: responds with appropriate error message when article_id does not exist", async () => {
+        const { body } = await request(app)
+          .delete("/api/articles/999")
+          .expect(404);
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("400: responds with appropriate error message when article_id is invalid", async () => {
+        const { body } = await request(app)
+          .delete("/api/articles/not-an-id")
+          .expect(400);
+        expect(body.message).toBe("Bad request");
+      });
+    });
   });
 
   describe("/api/articles/:article_id/comments", () => {
