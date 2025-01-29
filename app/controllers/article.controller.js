@@ -70,7 +70,8 @@ exports.getArticleComments = async (req, res, next) => {
 
 exports.postArticleComment = async (req, res, next) => {
   const { article_id } = req.params;
-  const { username, body } = req.body;
+  const { body } = req.body;
+  const { username } = req.user;
 
   try {
     const comment = await insertArticleComment(article_id, username, body);

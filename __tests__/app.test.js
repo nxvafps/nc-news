@@ -839,14 +839,32 @@ describe("app", () => {
     });
 
     describe("POST", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
       test("201: adds a comment to an article and responds with the posted comment", async () => {
         const newComment = {
-          username: "butter_bridge",
           body: "This is a test comment",
         };
 
         const { body } = await request(app)
           .post("/api/articles/1/comments")
+          .set("Authorization", `Bearer ${token}`)
           .send(newComment)
           .expect(201);
 
@@ -854,19 +872,45 @@ describe("app", () => {
           comment_id: expect.any(Number),
           body: newComment.body,
           article_id: 1,
-          author: newComment.username,
+          author: "testuser",
           votes: expect.any(Number),
           created_at: expect.any(String),
         });
       });
 
-      test("400: responds with error when request body is missing required fields", async () => {
-        const invalidComment = {
-          username: "butter_bridge",
+      test("401: responds with error when no token provided", async () => {
+        const newComment = {
+          body: "This is a test comment",
         };
 
         const { body } = await request(app)
           .post("/api/articles/1/comments")
+          .send(newComment)
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("401: responds with error when invalid token provided", async () => {
+        const newComment = {
+          body: "This is a test comment",
+        };
+
+        const { body } = await request(app)
+          .post("/api/articles/1/comments")
+          .set("Authorization", "Bearer invalid_token")
+          .send(newComment)
+          .expect(401);
+
+        expect(body.message).toBe("Invalid token");
+      });
+
+      test("400: responds with error when request body is missing required fields", async () => {
+        const invalidComment = {};
+
+        const { body } = await request(app)
+          .post("/api/articles/1/comments")
+          .set("Authorization", `Bearer ${token}`)
           .send(invalidComment)
           .expect(400);
 
@@ -875,44 +919,16 @@ describe("app", () => {
 
       test("404: responds with error when article_id does not exist", async () => {
         const newComment = {
-          username: "butter_bridge",
           body: "This is a test comment",
         };
 
         const { body } = await request(app)
           .post("/api/articles/999/comments")
+          .set("Authorization", `Bearer ${token}`)
           .send(newComment)
           .expect(404);
 
         expect(body.message).toBe("Article not found");
-      });
-
-      test("404: responds with error when username does not exist", async () => {
-        const newComment = {
-          username: "not_a_user",
-          body: "This is a test comment",
-        };
-
-        const { body } = await request(app)
-          .post("/api/articles/1/comments")
-          .send(newComment)
-          .expect(404);
-
-        expect(body.message).toBe("Username not found");
-      });
-
-      test("400: responds with error when article_id is invalid", async () => {
-        const newComment = {
-          username: "butter_bridge",
-          body: "This is a test comment",
-        };
-
-        const { body } = await request(app)
-          .post("/api/articles/not-an-id/comments")
-          .send(newComment)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
       });
     });
 

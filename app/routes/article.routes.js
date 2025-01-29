@@ -401,7 +401,7 @@ articlesRouter.get("/:article_id/comments", getArticleComments);
  *       404:
  *         description: Article not found
  */
-articlesRouter.post("/:article_id/comments", postArticleComment);
+articlesRouter.post("/:article_id/comments", authenticate, postArticleComment);
 articlesRouter.patch("/:article_id/comments", forbiddenMethod);
 articlesRouter.delete("/:article_id/comments", forbiddenMethod);
 
