@@ -1,5 +1,5 @@
 const apiRouter = require("express").Router();
-const { forbiddenMethod } = require("./utils/forbidden-method");
+const { handleForbiddenMethods } = require("./utils/forbidden-method");
 const { getEndpoints } = require("../controllers/api.controller");
 const articlesRouter = require("./article.routes");
 const commentsRouter = require("./comment.routes");
@@ -8,9 +8,7 @@ const usersRouter = require("./user.routes");
 const authRouter = require("./auth.routes");
 
 apiRouter.get("/", getEndpoints);
-apiRouter.post("/", forbiddenMethod);
-apiRouter.patch("/", forbiddenMethod);
-apiRouter.delete("/", forbiddenMethod);
+handleForbiddenMethods(apiRouter, ["GET"]);
 
 apiRouter.use("/topics", topicsRouter);
 apiRouter.use("/articles", articlesRouter);
