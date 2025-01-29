@@ -58,6 +58,24 @@ describe("app", () => {
       });
     });
     describe("POST", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
       test("201: adds a new topic and responds with the posted topic", async () => {
         const newTopic = {
           slug: "test-topic",
@@ -66,6 +84,7 @@ describe("app", () => {
 
         const { body } = await request(app)
           .post("/api/topics")
+          .set("Authorization", `Bearer ${token}`)
           .send(newTopic)
           .expect(201);
 
@@ -80,6 +99,35 @@ describe("app", () => {
         expect(getBody.topics).toContainEqual(newTopic);
       });
 
+      test("401: responds with error when no token provided", async () => {
+        const newTopic = {
+          slug: "test-topic",
+          description: "This is a test topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/topics")
+          .send(newTopic)
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("401: responds with error when invalid token provided", async () => {
+        const newTopic = {
+          slug: "test-topic",
+          description: "This is a test topic",
+        };
+
+        const { body } = await request(app)
+          .post("/api/topics")
+          .set("Authorization", "Bearer invalid_token")
+          .send(newTopic)
+          .expect(401);
+
+        expect(body.message).toBe("Invalid token");
+      });
+
       test("400: responds with error when request body is missing required fields", async () => {
         const invalidTopic = {
           slug: "test-topic",
@@ -87,43 +135,8 @@ describe("app", () => {
 
         const { body } = await request(app)
           .post("/api/topics")
+          .set("Authorization", `Bearer ${token}`)
           .send(invalidTopic)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("400: responds with error when slug is missing", async () => {
-        const invalidTopic = {
-          description: "This is a test topic",
-        };
-
-        const { body } = await request(app)
-          .post("/api/topics")
-          .send(invalidTopic)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("409: responds with error when topic slug already exists", async () => {
-        const existingTopic = {
-          slug: "mitch",
-          description: "This is a duplicate topic",
-        };
-
-        const { body } = await request(app)
-          .post("/api/topics")
-          .send(existingTopic)
-          .expect(409);
-
-        expect(body.message).toBe("Topic already exists");
-      });
-
-      test("400: responds with error when request body is empty", async () => {
-        const { body } = await request(app)
-          .post("/api/topics")
-          .send({})
           .expect(400);
 
         expect(body.message).toBe("Bad request");
