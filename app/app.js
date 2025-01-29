@@ -10,14 +10,30 @@ const swaggerSpec = require("./swagger");
 const apiRouter = require("./routes/api.routes");
 const errorHandler = require("./middlewares/error-handler");
 const AppError = require("./utils/app-error");
+const {
+  globalLimiter,
+  authLimiter,
+  apiLimiter,
+} = require("./middlewares/rate-limit");
 
 const app = express();
 
 app.use(express.json());
 
+//rate limiting middleware
+if (process.env.NODE_ENV !== "test") {
+  app.use(globalLimiter);
+  app.use("/api/auth", authLimiter);
+  app.use("/api", apiLimiter);
+}
+
+//routes
 app.use("/api", apiRouter);
+
+//documentation
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+//error handling middleware
 app.all("*", (req, res, next) => {
   next(AppError.notFound(`Can't find ${req.originalUrl} on this server`));
 });

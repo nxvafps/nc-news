@@ -141,6 +141,22 @@ Authentication endpoints:
 
 For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
 
+### Rate Limiting
+
+The API implements rate limiting to prevent abuse:
+
+- Global: 100 requests per 15 minutes per IP
+- Auth endpoints (/api/auth/\*): 5 requests per hour per IP
+- API endpoints (/api/\*): 50 requests per 15 minutes per IP
+
+When rate limits are exceeded, the API will respond with a 429 status code and an error message.
+
+Rate limit information is included in the response headers:
+
+- `RateLimit-Limit`: Maximum number of requests allowed
+- `RateLimit-Remaining`: Number of requests remaining in the current time window
+- `RateLimit-Reset`: Time when the rate limit will reset (in Unix epoch seconds)
+
 ## 🚀 Local Development
 
 1. Start the development server:
