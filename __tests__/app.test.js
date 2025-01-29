@@ -1038,26 +1038,90 @@ describe("app", () => {
       });
     });
     describe("DELETE", () => {
-      test("204: deletes the specified comment and returns no content", async () => {
-        await request(app).delete("/api/comments/1").expect(204);
+      let token;
 
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("204: successfully deletes comment when authenticated as owner", async () => {
+        const newComment = {
+          body: "Test comment to delete",
+        };
+
+        const commentResponse = await request(app)
+          .post("/api/articles/1/comments")
+          .set("Authorization", `Bearer ${token}`)
+          .send(newComment);
+
+        const commentId = commentResponse.body.comment.comment_id;
+
+        await request(app)
+          .delete(`/api/comments/${commentId}`)
+          .set("Authorization", `Bearer ${token}`)
+          .expect(204);
+
+        const { body } = await request(app)
+          .delete(`/api/comments/${commentId}`)
+          .set("Authorization", `Bearer ${token}`)
+          .expect(404);
+
+        expect(body.message).toBe("Comment not found");
+      });
+
+      test("401: responds with error when no token provided", async () => {
         const { body } = await request(app)
           .delete("/api/comments/1")
-          .expect(404);
-        expect(body.message).toBe("Comment not found");
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
       });
 
-      test("404: responds with appropriate error message when comment_id does not exist", async () => {
+      test("401: responds with error when invalid token provided", async () => {
+        const { body } = await request(app)
+          .delete("/api/comments/1")
+          .set("Authorization", "Bearer invalid_token")
+          .expect(401);
+
+        expect(body.message).toBe("Invalid token");
+      });
+
+      test("403: responds with error when user is not the comment owner", async () => {
+        const { body } = await request(app)
+          .delete("/api/comments/1")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(403);
+
+        expect(body.message).toBe("Forbidden - user does not own the comment");
+      });
+
+      test("404: responds with error when comment_id does not exist", async () => {
         const { body } = await request(app)
           .delete("/api/comments/999")
+          .set("Authorization", `Bearer ${token}`)
           .expect(404);
+
         expect(body.message).toBe("Comment not found");
       });
 
-      test("400: responds with appropriate error message when comment_id is invalid", async () => {
+      test("400: responds with error when comment_id is invalid", async () => {
         const { body } = await request(app)
           .delete("/api/comments/not-a-number")
+          .set("Authorization", `Bearer ${token}`)
           .expect(400);
+
         expect(body.message).toBe("Bad request");
       });
     });

@@ -90,6 +90,6 @@ commentsRouter.patch("/:comment_id", authenticate, updateCommentVotes);
  *       400:
  *         description: Invalid comment_id format
  */
-commentsRouter.delete("/:comment_id", deleteCommentById);
+commentsRouter.delete("/:comment_id", authenticate, deleteCommentById);
 
 module.exports = commentsRouter;
