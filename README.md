@@ -6,8 +6,8 @@ Northcoders News API is a RESTful API that provides news articles, comments, and
 
 ## 🚀 Hosted Version
 
-Live API: [ncnews.novafps.com/api](https://ncnews.novafps.com/api)
-Documentation: [here](https://ncnews.novafps.com/api-docs)
+- Live API: [ncnews.novafps.com/api](https://ncnews.novafps.com/api)
+- Documentation: [here](https://ncnews.novafps.com/api-docs)
 
 ## 🛠️ Tech Stack
 
