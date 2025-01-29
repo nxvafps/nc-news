@@ -185,5 +185,53 @@
         "avatar_url": "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
       }
     }
+  },
+  "POST /api/auth/signup": {
+    "description": "creates a new user account",
+    "queries": [],
+    "exampleRequest": {
+      "username": "testuser",
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "password123"
+    },
+    "exampleResponse": {
+      "user": {
+        "username": "testuser",
+        "name": "Test User",
+        "email": "test@example.com"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+  },
+  "POST /api/auth/login": {
+    "description": "logs in an existing user",
+    "queries": [],
+    "exampleRequest": {
+      "email": "test@example.com",
+      "password": "password123"
+    },
+    "exampleResponse": {
+      "user": {
+        "username": "testuser",
+        "name": "Test User",
+        "email": "test@example.com"
+      },
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    }
+  },
+  "GET /api/auth/me": {
+    "description": "gets the current authenticated user's profile",
+    "queries": [],
+    "exampleHeader": {
+      "Authorization": "Bearer <token>"
+    },
+    "exampleResponse": {
+      "user": {
+        "username": "testuser",
+        "name": "Test User",
+        "email": "test@example.com"
+      }
+    }
   }
 }
