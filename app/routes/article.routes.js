@@ -1,3 +1,4 @@
+const express = require("express");
 const articlesRouter = require("express").Router();
 const {
   getArticles,
@@ -9,8 +10,9 @@ const {
   deleteArticleById,
 } = require("../controllers/article.controller");
 const { authenticate } = require("../middlewares/auth");
-const { forbiddenMethod } = require("./utils/forbidden-method");
+const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
+const rootRouter = express.Router();
 /**
  * @swagger
  * /api/articles:
@@ -86,7 +88,7 @@ const { forbiddenMethod } = require("./utils/forbidden-method");
  *       400:
  *         description: Bad request (invalid sort_by or order query)
  */
-articlesRouter.get("/", getArticles);
+rootRouter.get("/", getArticles);
 /**
  * @swagger
  * /api/articles:
@@ -144,10 +146,11 @@ articlesRouter.get("/", getArticles);
  *       401:
  *         description: Unauthorized - authentication required
  */
-articlesRouter.post("/", authenticate, postArticle);
-articlesRouter.patch("/", forbiddenMethod);
-articlesRouter.delete("/", forbiddenMethod);
+rootRouter.post("/", authenticate, postArticle);
+handleForbiddenMethods(rootRouter, ["GET", "POST"]);
+articlesRouter.use("/", rootRouter);
 
+const singleArticleRouter = express.Router({ mergeParams: true });
 /**
  * @swagger
  * /api/articles/{article_id}:
@@ -194,8 +197,7 @@ articlesRouter.delete("/", forbiddenMethod);
  *       400:
  *         description: Invalid article_id format
  */
-articlesRouter.get("/:article_id", getArticleById);
-articlesRouter.post("/:article_id", forbiddenMethod);
+singleArticleRouter.get("/", getArticleById);
 /**
  * @swagger
  * /api/articles/{article_id}:
@@ -256,7 +258,7 @@ articlesRouter.post("/:article_id", forbiddenMethod);
  *       404:
  *         description: Article not found
  */
-articlesRouter.patch("/:article_id", authenticate, updateArticleVotes);
+singleArticleRouter.patch("/", authenticate, updateArticleVotes);
 /**
  * @swagger
  * /api/articles/{article_id}:
@@ -284,8 +286,11 @@ articlesRouter.patch("/:article_id", authenticate, updateArticleVotes);
  *       400:
  *         description: Invalid article_id format
  */
-articlesRouter.delete("/:article_id", authenticate, deleteArticleById);
+singleArticleRouter.delete("/", authenticate, deleteArticleById);
+handleForbiddenMethods(singleArticleRouter, ["GET", "PATCH", "DELETE"]);
+articlesRouter.use("/:article_id", singleArticleRouter);
 
+const commentsRouter = express.Router({ mergeParams: true });
 /**
  * @swagger
  * /api/articles/{article_id}/comments:
@@ -342,7 +347,7 @@ articlesRouter.delete("/:article_id", authenticate, deleteArticleById);
  *       400:
  *         description: Invalid article_id format
  */
-articlesRouter.get("/:article_id/comments", getArticleComments);
+commentsRouter.get("/", getArticleComments);
 /**
  * @swagger
  * /api/articles/{article_id}/comments:
@@ -401,8 +406,8 @@ articlesRouter.get("/:article_id/comments", getArticleComments);
  *       404:
  *         description: Article not found
  */
-articlesRouter.post("/:article_id/comments", authenticate, postArticleComment);
-articlesRouter.patch("/:article_id/comments", forbiddenMethod);
-articlesRouter.delete("/:article_id/comments", forbiddenMethod);
+commentsRouter.post("/", authenticate, postArticleComment);
+handleForbiddenMethods(commentsRouter, ["GET", "POST"]);
+articlesRouter.use("/:article_id/comments", commentsRouter);
 
 module.exports = articlesRouter;

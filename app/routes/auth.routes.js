@@ -1,14 +1,14 @@
+const express = require("express");
 const authRouter = require("express").Router();
 const { signup, login, getMe } = require("../controllers/auth.controller");
 const { authenticate } = require("../middlewares/auth");
-const { forbiddenMethod } = require("./utils/forbidden-method");
+const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
-authRouter.get("/", forbiddenMethod);
-authRouter.post("/", forbiddenMethod);
-authRouter.patch("/", forbiddenMethod);
-authRouter.delete("/", forbiddenMethod);
+const rootRouter = express.Router();
+handleForbiddenMethods(rootRouter, []);
+authRouter.use("/", rootRouter);
 
-authRouter.get("/signup", forbiddenMethod);
+const signupRouter = express.Router();
 /**
  * @swagger
  * /api/auth/signup:
@@ -66,11 +66,11 @@ authRouter.get("/signup", forbiddenMethod);
  *       409:
  *         description: Conflict - username or email already exists
  */
-authRouter.post("/signup", signup);
-authRouter.patch("/signup", forbiddenMethod);
-authRouter.delete("/signup", forbiddenMethod);
+signupRouter.post("/", signup);
+handleForbiddenMethods(signupRouter, ["POST"]);
+authRouter.use("/signup", signupRouter);
 
-authRouter.get("/login", forbiddenMethod);
+const loginRouter = express.Router();
 /**
  * @swagger
  * /api/auth/login:
@@ -120,10 +120,11 @@ authRouter.get("/login", forbiddenMethod);
  *       400:
  *         description: Bad request - missing email or password
  */
-authRouter.post("/login", login);
-authRouter.patch("/login", forbiddenMethod);
-authRouter.delete("/login", forbiddenMethod);
+loginRouter.post("/", login);
+handleForbiddenMethods(loginRouter, ["POST"]);
+authRouter.use("/login", loginRouter);
 
+const meRouter = express.Router();
 /**
  * @swagger
  * /api/auth/me:
@@ -154,9 +155,8 @@ authRouter.delete("/login", forbiddenMethod);
  *       404:
  *         description: User not found
  */
-authRouter.get("/me", authenticate, getMe);
-authRouter.post("/me", forbiddenMethod);
-authRouter.patch("/me", forbiddenMethod);
-authRouter.delete("/me", forbiddenMethod);
+meRouter.get("/", authenticate, getMe);
+handleForbiddenMethods(meRouter, ["GET"]);
+authRouter.use("/me", meRouter);
 
 module.exports = authRouter;

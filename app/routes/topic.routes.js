@@ -1,8 +1,10 @@
+const express = require("express");
 const topicsRouter = require("express").Router();
 const { getTopics, postTopic } = require("../controllers/topic.controller");
 const { authenticate } = require("../middlewares/auth");
-const { forbiddenMethod } = require("./utils/forbidden-method");
+const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
+const rootRouter = express.Router();
 /**
  * @swagger
  * /api/topics:
@@ -31,7 +33,7 @@ const { forbiddenMethod } = require("./utils/forbidden-method");
  *       500:
  *         description: Internal server error
  */
-topicsRouter.get("/", getTopics);
+rootRouter.get("/", getTopics);
 /**
  * @swagger
  * /api/topics:
@@ -78,8 +80,8 @@ topicsRouter.get("/", getTopics);
  *       401:
  *         description: Unauthorized - authentication required
  */
-topicsRouter.post("/", authenticate, postTopic);
-topicsRouter.patch("/", forbiddenMethod);
-topicsRouter.delete("/", forbiddenMethod);
+rootRouter.post("/", authenticate, postTopic);
+handleForbiddenMethods(rootRouter, ["GET", "POST"]);
+topicsRouter.use("/", rootRouter);
 
 module.exports = topicsRouter;

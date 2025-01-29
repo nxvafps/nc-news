@@ -1,3 +1,4 @@
+const express = require("express");
 const usersRouter = require("express").Router();
 const {
   getUsers,
@@ -5,9 +6,10 @@ const {
   updateUserProfile,
   updateUserAvatar,
 } = require("../controllers/user.controller");
-const { forbiddenMethod } = require("./utils/forbidden-method");
+const { handleForbiddenMethods } = require("./utils/forbidden-method");
 const { authenticate } = require("../middlewares/auth");
 
+const rootRouter = express.Router();
 /**
  * @swagger
  * /api/users:
@@ -37,11 +39,11 @@ const { authenticate } = require("../middlewares/auth");
  *       500:
  *         description: Internal server error
  */
-usersRouter.get("/", getUsers);
-usersRouter.post("/", forbiddenMethod);
-usersRouter.patch("/", forbiddenMethod);
-usersRouter.delete("/", forbiddenMethod);
+rootRouter.get("/", getUsers);
+handleForbiddenMethods(rootRouter, ["GET"]);
+usersRouter.use("/", rootRouter);
 
+const singleUserRouter = express.Router({ mergeParams: true });
 /**
  * @swagger
  * /api/users/{username}:
@@ -79,8 +81,7 @@ usersRouter.delete("/", forbiddenMethod);
  *       404:
  *         description: User not found
  */
-usersRouter.get("/:username", getUserByUsername);
-usersRouter.post("/:username", forbiddenMethod);
+singleUserRouter.get("/", getUserByUsername);
 /**
  * @swagger
  * /api/users/{username}:
@@ -135,9 +136,11 @@ usersRouter.post("/:username", forbiddenMethod);
  *       404:
  *         description: User not found
  */
-usersRouter.patch("/:username", authenticate, updateUserProfile);
-usersRouter.delete("/:username", forbiddenMethod);
+singleUserRouter.patch("/", authenticate, updateUserProfile);
+handleForbiddenMethods(singleUserRouter, ["GET", "PATCH"]);
+usersRouter.use("/:username", singleUserRouter);
 
+const avatarRouter = express.Router({ mergeParams: true });
 /**
  * @swagger
  * /api/users/{username}/avatar:
@@ -193,6 +196,8 @@ usersRouter.delete("/:username", forbiddenMethod);
  *       404:
  *         description: User not found
  */
-usersRouter.put("/:username/avatar", authenticate, updateUserAvatar);
+avatarRouter.put("/", authenticate, updateUserAvatar);
+handleForbiddenMethods(avatarRouter, ["PUT"]);
+usersRouter.use("/:username/avatar", avatarRouter);
 
 module.exports = usersRouter;

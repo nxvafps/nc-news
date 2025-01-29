@@ -1,13 +1,13 @@
+const express = require("express");
 const commentsRouter = require("express").Router();
 const {
   deleteCommentById,
   updateCommentVotes,
 } = require("../controllers/comment.controller");
 const { authenticate } = require("../middlewares/auth");
-const { forbiddenMethod } = require("./utils/forbidden-method");
+const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
-commentsRouter.get("/:comment_id", forbiddenMethod);
-commentsRouter.post("/:comment_id", forbiddenMethod);
+const singleCommentRouter = express.Router({ mergeParams: true });
 /**
  * @swagger
  * /api/comments/{comment_id}:
@@ -62,7 +62,7 @@ commentsRouter.post("/:comment_id", forbiddenMethod);
  *       404:
  *         description: Comment not found
  */
-commentsRouter.patch("/:comment_id", authenticate, updateCommentVotes);
+singleCommentRouter.patch("/", authenticate, updateCommentVotes);
 /**
  * @swagger
  * /api/comments/{comment_id}:
@@ -90,6 +90,8 @@ commentsRouter.patch("/:comment_id", authenticate, updateCommentVotes);
  *       400:
  *         description: Invalid comment_id format
  */
-commentsRouter.delete("/:comment_id", authenticate, deleteCommentById);
+singleCommentRouter.delete("/", authenticate, deleteCommentById);
+handleForbiddenMethods(singleCommentRouter, ["PATCH", "DELETE"]);
+commentsRouter.use("/:comment_id", singleCommentRouter);
 
 module.exports = commentsRouter;
