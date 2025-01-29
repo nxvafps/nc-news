@@ -96,7 +96,7 @@ Authentication endpoints:
 - POST /api/auth/login
 - GET /api/auth/me
 
-For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api)
+For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
 
 ## 🧪 Testing
 
