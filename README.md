@@ -14,7 +14,7 @@ Live API: [ncnews.novafps.com/api](http://ncnews.novafps.com/api)
 - Express.js
 - PostgreSQL
 - Docker (Hosting)
-- Jest (Testing)
+- Jest & Jest-Extended (Testing)
 - Supertest (API Testing)
 - JWT (Authentication)
 - bcrypt (Password Hashing)
@@ -97,9 +97,13 @@ npm run seed
 ## 🚦 Available Scripts
 
 - `npm start` - Start the server
+- `npm run dev` - Start development server with nodemon
 - `npm test` - Run tests
 - `npm run seed` - Seed the database
 - `npm run setup-dbs` - Reset the databases
+- `npm run docker-dev` - Start development environment with Docker
+- `npm run docker-stop` - Stop Docker containers
+- `npm run setup-all` - Setup production environment (Docker + DB setup)
 
 ## 📚 API Documentation
 
@@ -125,7 +129,7 @@ Authentication endpoints:
 - POST /api/auth/login
 - GET /api/auth/me
 
-Protected endpoints (require authentication):
+### Protected Endpoints (require authentication)
 
 - POST /api/articles
 - PATCH /api/articles/:article_id
@@ -133,9 +137,20 @@ Protected endpoints (require authentication):
 - POST /api/topics
 - POST /api/articles/:article_id/comments
 - PATCH /api/comments/:comment_id
-- DELETE /api/comments/:comment_id
+- DELETE /api/comments/:comment_id (owner only)
 
-  For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
+For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
+
+## 🚀 Local Development
+
+1. Start the development server:
+
+```bash
+npm run dev
+```
+
+2. Visit the API at http://localhost:8080/api
+3. View API documentation at http://localhost:8080/api-docs
 
 ## 🧪 Testing
 
