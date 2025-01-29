@@ -3,6 +3,7 @@ const {
   selectUsers,
   selectUserByUsername,
   updateUserProfileById,
+  updateUserAvatarById,
 } = require("../models/user.model");
 
 const AppError = require("../utils/app-error");
@@ -41,6 +42,31 @@ exports.updateUserProfile = async (req, res, next) => {
     }
 
     const user = await updateUserProfileById(username, { name, avatar_url });
+    res.status(200).send({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateUserAvatar = async (req, res, next) => {
+  try {
+    const { username } = req.params;
+    const { avatar_url } = req.body;
+
+    if (!avatar_url) {
+      throw AppError.badRequest("Bad request");
+    }
+
+    const checkUser = await findUserByUsername(username);
+    if (!checkUser) {
+      throw AppError.notFound("User not found");
+    }
+
+    if (username !== req.user.username) {
+      throw AppError.forbidden("Cannot update other users");
+    }
+
+    const user = await updateUserAvatarById(username, avatar_url);
     res.status(200).send({ user });
   } catch (err) {
     next(err);
