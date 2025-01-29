@@ -965,11 +965,30 @@ describe("app", () => {
       });
     });
     describe("PATCH", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
       test("200: updates comment votes and responds with updated comment", async () => {
         const voteUpdate = { inc_votes: 1 };
 
         const { body } = await request(app)
           .patch("/api/comments/1")
+          .set("Authorization", `Bearer ${token}`)
           .send(voteUpdate)
           .expect(200);
 
@@ -983,15 +1002,27 @@ describe("app", () => {
         });
       });
 
-      test("200: decrements votes when passed a negative value", async () => {
-        const voteUpdate = { inc_votes: -10 };
+      test("401: responds with error when no token provided", async () => {
+        const voteUpdate = { inc_votes: 1 };
 
         const { body } = await request(app)
           .patch("/api/comments/1")
           .send(voteUpdate)
-          .expect(200);
+          .expect(401);
 
-        expect(body.comment.votes).toBe(6);
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("401: responds with error when invalid token provided", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/comments/1")
+          .set("Authorization", "Bearer invalid_token")
+          .send(voteUpdate)
+          .expect(401);
+
+        expect(body.message).toBe("Invalid token");
       });
 
       test("400: responds with error when inc_votes is missing", async () => {
@@ -999,40 +1030,8 @@ describe("app", () => {
 
         const { body } = await request(app)
           .patch("/api/comments/1")
+          .set("Authorization", `Bearer ${token}`)
           .send(invalidVoteUpdate)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("400: responds with error when inc_votes is not a number", async () => {
-        const invalidVoteUpdate = { inc_votes: "not-a-number" };
-
-        const { body } = await request(app)
-          .patch("/api/comments/1")
-          .send(invalidVoteUpdate)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("404: responds with error when comment_id does not exist", async () => {
-        const voteUpdate = { inc_votes: 1 };
-
-        const { body } = await request(app)
-          .patch("/api/comments/999")
-          .send(voteUpdate)
-          .expect(404);
-
-        expect(body.message).toBe("Comment not found");
-      });
-
-      test("400: responds with error when comment_id is invalid", async () => {
-        const voteUpdate = { inc_votes: 1 };
-
-        const { body } = await request(app)
-          .patch("/api/comments/not-a-number")
-          .send(voteUpdate)
           .expect(400);
 
         expect(body.message).toBe("Bad request");

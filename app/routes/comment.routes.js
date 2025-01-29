@@ -3,6 +3,7 @@ const {
   deleteCommentById,
   updateCommentVotes,
 } = require("../controllers/comment.controller");
+const { authenticate } = require("../middlewares/auth");
 const { forbiddenMethod } = require("./utils/forbidden-method");
 
 commentsRouter.get("/:comment_id", forbiddenMethod);
@@ -61,7 +62,7 @@ commentsRouter.post("/:comment_id", forbiddenMethod);
  *       404:
  *         description: Comment not found
  */
-commentsRouter.patch("/:comment_id", updateCommentVotes);
+commentsRouter.patch("/:comment_id", authenticate, updateCommentVotes);
 /**
  * @swagger
  * /api/comments/{comment_id}:
