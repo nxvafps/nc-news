@@ -39,7 +39,7 @@ npm install
 
 3. Create environment files:
 
-Create two files in the root directory:
+Create the following files in the root directory:
 
 - `.env.development`
 - `.env.test`
@@ -48,14 +48,40 @@ Add the following content:
 
 `.env.development`:
 
-```
+```env
 PGDATABASE=your_development_db
+PORT=8080
+JWT_SECRET=your_secure_secret_key
+SWAGGER_URL=http://localhost:8080
 ```
 
 `.env.test`:
 
-```
+```env
 PGDATABASE=your_test_db
+PORT=8080
+JWT_SECRET=your_secure_secret_key
+SWAGGER_URL=http://localhost:8080
+```
+
+For production, create `.env.production` with:
+
+```env
+PGDATABASE=your_production_db
+PGUSER=your_db_user
+PGPASSWORD=your_db_password
+PGHOST=your_db_host
+PORT=8080
+JWT_SECRET=your_secure_secret_key
+SWAGGER_URL=your_api_url
+```
+
+> **Important**: Generate a secure random string for JWT_SECRET. Never commit your actual secret keys to version control.
+
+You can generate a secure secret using Node.js:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
 
 4. Setup and seed database:

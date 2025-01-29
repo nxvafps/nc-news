@@ -284,7 +284,7 @@ articlesRouter.patch("/:article_id", authenticate, updateArticleVotes);
  *       400:
  *         description: Invalid article_id format
  */
-articlesRouter.delete("/:article_id", deleteArticleById);
+articlesRouter.delete("/:article_id", authenticate, deleteArticleById);
 
 /**
  * @swagger

@@ -111,8 +111,15 @@ exports.postArticle = async (req, res, next) => {
 
 exports.deleteArticleById = async (req, res, next) => {
   const { article_id } = req.params;
+  const { username } = req.user;
 
   try {
+    const article = await selectArticleById(article_id);
+
+    if (article.author !== username) {
+      throw AppError.forbidden("Forbidden - user does not own the article");
+    }
+
     await removeArticleById(article_id);
     res.status(204).send();
   } catch (err) {
