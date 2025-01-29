@@ -16,6 +16,9 @@ Live API: [ncnews.novafps.com/api](http://ncnews.novafps.com/api)
 - Docker (Hosting)
 - Jest (Testing)
 - Supertest (API Testing)
+- JWT (Authentication)
+- bcrypt (Password Hashing)
+- Swagger (API Documentation)
 
 ## ⚙️ Prerequisites
 
@@ -100,7 +103,7 @@ npm run seed
 
 ## 📚 API Documentation
 
-Available endpoints:
+All available endpoints:
 
 - GET /api/topics
 - POST /api/topics
@@ -122,7 +125,17 @@ Authentication endpoints:
 - POST /api/auth/login
 - GET /api/auth/me
 
-For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
+Protected endpoints (require authentication):
+
+- POST /api/articles
+- PATCH /api/articles/:article_id
+- DELETE /api/articles/:article_id
+- POST /api/topics
+- POST /api/articles/:article_id/comments
+- PATCH /api/comments/:comment_id
+- DELETE /api/comments/:comment_id
+
+  For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
 
 ## 🧪 Testing
 
