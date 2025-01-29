@@ -1289,4 +1289,72 @@ describe("app", () => {
       });
     });
   });
+
+  describe("/api/users/:username/avatar", () => {
+    describe("PUT", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("200: updates user avatar and returns updated user", async () => {
+        const newAvatar = {
+          avatar_url: "https://new-avatar.com/image.jpg",
+        };
+
+        const { body } = await request(app)
+          .put("/api/users/testuser/avatar")
+          .set("Authorization", `Bearer ${token}`)
+          .send(newAvatar)
+          .expect(200);
+
+        expect(body.user).toMatchObject({
+          username: "testuser",
+          name: "Test User",
+          avatar_url: newAvatar.avatar_url,
+        });
+      });
+
+      test("401: responds with error when no token provided", async () => {
+        const { body } = await request(app)
+          .put("/api/users/testuser/avatar")
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("403: responds with error when trying to update another user's avatar", async () => {
+        const { body } = await request(app)
+          .put("/api/users/butter_bridge/avatar")
+          .set("Authorization", `Bearer ${token}`)
+          .send({ avatar_url: "https://new-avatar.com/image.jpg" })
+          .expect(403);
+
+        expect(body.message).toBe("Cannot update other users");
+      });
+
+      test("400: responds with error when avatar_url is missing", async () => {
+        const { body } = await request(app)
+          .put("/api/users/testuser/avatar")
+          .set("Authorization", `Bearer ${token}`)
+          .send({})
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
+  });
 });

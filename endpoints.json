@@ -201,6 +201,20 @@
       }
     }
   },
+  "PUT /api/users/:username/avatar": {
+    "description": "updates a user's avatar URL",
+    "queries": [],
+    "exampleRequest": {
+      "avatar_url": "https://new-avatar.com/image.jpg"
+    },
+    "exampleResponse": {
+      "user": {
+        "username": "testuser",
+        "name": "Test User",
+        "avatar_url": "https://new-avatar.com/image.jpg"
+      }
+    }
+  },
   "POST /api/auth/signup": {
     "description": "creates a new user account",
     "queries": [],

@@ -3,6 +3,7 @@ const {
   getUsers,
   getUserByUsername,
   updateUserProfile,
+  updateUserAvatar,
 } = require("../controllers/user.controller");
 const { forbiddenMethod } = require("./utils/forbidden-method");
 const { authenticate } = require("../middlewares/auth");
@@ -136,5 +137,62 @@ usersRouter.post("/:username", forbiddenMethod);
  */
 usersRouter.patch("/:username", authenticate, updateUserProfile);
 usersRouter.delete("/:username", forbiddenMethod);
+
+/**
+ * @swagger
+ * /api/users/{username}/avatar:
+ *   put:
+ *     summary: Update user avatar
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Username of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - avatar_url
+ *             properties:
+ *               avatar_url:
+ *                 type: string
+ *                 format: uri
+ *                 description: URL to user's new avatar image
+ *     responses:
+ *       200:
+ *         description: Avatar updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     avatar_url:
+ *                       type: string
+ *                       format: uri
+ *       400:
+ *         description: Bad request - missing avatar_url
+ *       401:
+ *         description: Unauthorized - authentication required
+ *       403:
+ *         description: Forbidden - cannot update other users
+ *       404:
+ *         description: User not found
+ */
+usersRouter.put("/:username/avatar", authenticate, updateUserAvatar);
 
 module.exports = usersRouter;

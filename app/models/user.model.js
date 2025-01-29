@@ -43,3 +43,19 @@ exports.updateUserProfileById = async (username, updates) => {
 
   return result.rows[0];
 };
+
+exports.updateUserAvatarById = async (username, avatar_url) => {
+  const result = await db.query(
+    `UPDATE users
+     SET avatar_url = $1
+     WHERE username = $2
+     RETURNING username, name, avatar_url`,
+    [avatar_url, username]
+  );
+
+  if (result.rows.length === 0) {
+    throw AppError.notFound("User not found");
+  }
+
+  return result.rows[0];
+};

@@ -122,6 +122,7 @@ All available endpoints:
 - DELETE /api/comments/:comment_id
 - GET /api/users
 - GET /api/users/:username
+- PUT /api/users/:username/avatar
 
 Authentication endpoints:
 
@@ -139,6 +140,7 @@ Authentication endpoints:
 - PATCH /api/comments/:comment_id
 - DELETE /api/comments/:comment_id (owner only)
 - PATCH /api/users/:username (owner only)
+- PUT /api/users/:username/avatar (owner only)
 
 For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
 
