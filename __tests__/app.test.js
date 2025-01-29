@@ -516,7 +516,7 @@ describe("app", () => {
       });
     });
 
-    describe("POST", () => {
+    describe("PATCH", () => {
       let token;
 
       beforeEach(async () => {
@@ -535,50 +535,94 @@ describe("app", () => {
         token = loginResponse.body.token;
       });
 
-      test("201: adds a new article and responds with the posted article", async () => {
-        const newArticle = {
-          author: "testuser",
-          title: "Test Article",
-          body: "This is a test article",
-          topic: "cats",
-        };
+      test("200: updates article votes and responds with updated article", async () => {
+        const voteUpdate = { inc_votes: 1 };
 
         const { body } = await request(app)
-          .post("/api/articles")
+          .patch("/api/articles/1")
           .set("Authorization", `Bearer ${token}`)
-          .send(newArticle)
-          .expect(201);
+          .send(voteUpdate)
+          .expect(200);
 
         expect(body.article).toMatchObject({
-          article_id: expect.any(Number),
-          author: newArticle.author,
-          title: newArticle.title,
-          body: newArticle.body,
-          topic: newArticle.topic,
-          article_img_url: expect.any(String),
-          votes: 0,
+          article_id: 1,
+          title: "Living in the shadow of a great man",
+          topic: "mitch",
+          author: "butter_bridge",
+          body: "I find this existence challenging",
           created_at: expect.any(String),
-          comment_count: 0,
+          votes: 101,
+          article_img_url: expect.any(String),
         });
       });
 
       test("401: responds with error when no token provided", async () => {
-        const newArticle = {
-          author: "testuser",
-          title: "Test Article",
-          body: "This is a test article",
-          topic: "cats",
-        };
+        const voteUpdate = { inc_votes: 1 };
 
         const { body } = await request(app)
-          .post("/api/articles")
-          .send(newArticle)
+          .patch("/api/articles/1")
+          .send(voteUpdate)
           .expect(401);
 
         expect(body.message).toBe("No token provided");
       });
 
       test("401: responds with error when invalid token provided", async () => {
+        const voteUpdate = { inc_votes: 1 };
+
+        const { body } = await request(app)
+          .patch("/api/articles/1")
+          .set("Authorization", "Bearer invalid_token")
+          .send(voteUpdate)
+          .expect(401);
+
+        expect(body.message).toBe("Invalid token");
+      });
+
+      test("400: responds with error when inc_votes is missing", async () => {
+        const invalidVoteUpdate = {};
+
+        const { body } = await request(app)
+          .patch("/api/articles/1")
+          .set("Authorization", `Bearer ${token}`)
+          .send(invalidVoteUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
+
+    describe("DELETE", () => {
+      let token;
+      let adminToken;
+
+      beforeEach(async () => {
+        // Create regular user
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        // Get regular user token
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+        token = loginResponse.body.token;
+
+        // Get admin token (using existing admin user 'rogersop' from test data)
+        const adminLoginResponse = await request(app)
+          .post("/api/auth/login")
+          .send({
+            email: "rogersop@example.com",
+            password: "password3",
+          });
+        adminToken = adminLoginResponse.body.token;
+      });
+
+      test("204: successfully deletes article when authenticated as owner", async () => {
         const newArticle = {
           author: "testuser",
           title: "Test Article",
@@ -586,47 +630,66 @@ describe("app", () => {
           topic: "cats",
         };
 
-        const { body } = await request(app)
+        const createResponse = await request(app)
           .post("/api/articles")
+          .set("Authorization", `Bearer ${token}`)
+          .send(newArticle);
+
+        const articleId = createResponse.body.article.article_id;
+
+        await request(app)
+          .delete(`/api/articles/${articleId}`)
+          .set("Authorization", `Bearer ${token}`)
+          .expect(204);
+
+        const { body } = await request(app)
+          .get(`/api/articles/${articleId}`)
+          .expect(404);
+
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("401: responds with error when no token provided", async () => {
+        const { body } = await request(app)
+          .delete("/api/articles/1")
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("401: responds with error when invalid token provided", async () => {
+        const { body } = await request(app)
+          .delete("/api/articles/1")
           .set("Authorization", "Bearer invalid_token")
-          .send(newArticle)
           .expect(401);
 
         expect(body.message).toBe("Invalid token");
       });
-    });
 
-    describe("DELETE", () => {
-      test("204: deletes the specified article and its comments and returns no content", async () => {
-        const { body: articleBody } = await request(app)
-          .get("/api/articles/1")
-          .expect(200);
-        expect(articleBody.article.comment_count).toBe(11);
+      test("403: responds with error when user is not the article owner", async () => {
+        const { body } = await request(app)
+          .delete("/api/articles/1")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(403);
 
-        await request(app).delete("/api/articles/1").expect(204);
-
-        const { body: notFoundBody } = await request(app)
-          .get("/api/articles/1")
-          .expect(404);
-        expect(notFoundBody.message).toBe("Article not found");
-
-        const { body: commentsBody } = await request(app)
-          .get("/api/articles/1/comments")
-          .expect(404);
-        expect(commentsBody.message).toBe("Article not found");
+        expect(body.message).toBe("Forbidden - user does not own the article");
       });
 
-      test("404: responds with appropriate error message when article_id does not exist", async () => {
+      test("404: responds with error when article_id does not exist", async () => {
         const { body } = await request(app)
           .delete("/api/articles/999")
+          .set("Authorization", `Bearer ${token}`)
           .expect(404);
+
         expect(body.message).toBe("Article not found");
       });
 
-      test("400: responds with appropriate error message when article_id is invalid", async () => {
+      test("400: responds with error when article_id is invalid", async () => {
         const { body } = await request(app)
           .delete("/api/articles/not-an-id")
+          .set("Authorization", `Bearer ${token}`)
           .expect(400);
+
         expect(body.message).toBe("Bad request");
       });
     });

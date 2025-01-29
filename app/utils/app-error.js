@@ -16,6 +16,10 @@ class AppError extends Error {
     return new AppError(message || "Unauthorized", 401);
   }
 
+  static forbidden(message) {
+    return new AppError(message || "Forbidden", 403);
+  }
+
   static notFound(message) {
     return new AppError(message || "Not found", 404);
   }
