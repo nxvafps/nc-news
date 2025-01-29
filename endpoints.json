@@ -186,6 +186,21 @@
       }
     }
   },
+  "PATCH /api/users/:username": {
+    "description": "updates a user's profile information",
+    "queries": [],
+    "exampleRequest": {
+      "name": "Updated Name",
+      "avatar_url": "https://new-avatar-url.com/image.jpg"
+    },
+    "exampleResponse": {
+      "user": {
+        "username": "testuser",
+        "name": "Updated Name",
+        "avatar_url": "https://new-avatar-url.com/image.jpg"
+      }
+    }
+  },
   "POST /api/auth/signup": {
     "description": "creates a new user account",
     "queries": [],
