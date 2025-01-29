@@ -90,6 +90,12 @@ Available endpoints:
 - GET /api/users
 - GET /api/users/:username
 
+Authentication endpoints:
+
+- POST /api/auth/signup
+- POST /api/auth/login
+- GET /api/auth/me
+
 For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api)
 
 ## 🧪 Testing
