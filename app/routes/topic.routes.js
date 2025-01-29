@@ -1,5 +1,6 @@
 const topicsRouter = require("express").Router();
 const { getTopics, postTopic } = require("../controllers/topic.controller");
+const { authenticate } = require("../middlewares/auth");
 const { forbiddenMethod } = require("./utils/forbidden-method");
 
 /**
@@ -77,7 +78,7 @@ topicsRouter.get("/", getTopics);
  *       401:
  *         description: Unauthorized - authentication required
  */
-topicsRouter.post("/", postTopic);
+topicsRouter.post("/", authenticate, postTopic);
 topicsRouter.patch("/", forbiddenMethod);
 topicsRouter.delete("/", forbiddenMethod);
 
