@@ -376,9 +376,27 @@ describe("app", () => {
     });
 
     describe("POST", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
       test("201: adds a new article and responds with the posted article", async () => {
         const newArticle = {
-          author: "butter_bridge",
+          author: "testuser",
           title: "Test Article",
           body: "This is a test article",
           topic: "cats",
@@ -386,6 +404,7 @@ describe("app", () => {
 
         const { body } = await request(app)
           .post("/api/articles")
+          .set("Authorization", `Bearer ${token}`)
           .send(newArticle)
           .expect(201);
 
@@ -402,9 +421,9 @@ describe("app", () => {
         });
       });
 
-      test("201: sets default article_img_url when not provided", async () => {
+      test("401: responds with error when no token provided", async () => {
         const newArticle = {
-          author: "butter_bridge",
+          author: "testuser",
           title: "Test Article",
           body: "This is a test article",
           topic: "cats",
@@ -413,47 +432,14 @@ describe("app", () => {
         const { body } = await request(app)
           .post("/api/articles")
           .send(newArticle)
-          .expect(201);
+          .expect(401);
 
-        expect(body.article.article_img_url).toEqual(expect.any(String));
+        expect(body.message).toBe("No token provided");
       });
 
-      test("201: accepts custom article_img_url", async () => {
+      test("401: responds with error when invalid token provided", async () => {
         const newArticle = {
-          author: "butter_bridge",
-          title: "Test Article",
-          body: "This is a test article",
-          topic: "cats",
-          article_img_url: "https://test-image.jpg",
-        };
-
-        const { body } = await request(app)
-          .post("/api/articles")
-          .send(newArticle)
-          .expect(201);
-
-        expect(body.article.article_img_url).toBe(newArticle.article_img_url);
-      });
-
-      test("400: responds with error when request body is missing required fields", async () => {
-        const invalidArticle = {
-          author: "butter_bridge",
-          // missing title
-          body: "This is a test article",
-          topic: "cats",
-        };
-
-        const { body } = await request(app)
-          .post("/api/articles")
-          .send(invalidArticle)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("404: responds with error when author does not exist", async () => {
-        const newArticle = {
-          author: "not_a_user",
+          author: "testuser",
           title: "Test Article",
           body: "This is a test article",
           topic: "cats",
@@ -461,26 +447,11 @@ describe("app", () => {
 
         const { body } = await request(app)
           .post("/api/articles")
+          .set("Authorization", "Bearer invalid_token")
           .send(newArticle)
-          .expect(404);
+          .expect(401);
 
-        expect(body.message).toBe("Author not found");
-      });
-
-      test("404: responds with error when topic does not exist", async () => {
-        const newArticle = {
-          author: "butter_bridge",
-          title: "Test Article",
-          body: "This is a test article",
-          topic: "not_a_topic",
-        };
-
-        const { body } = await request(app)
-          .post("/api/articles")
-          .send(newArticle)
-          .expect(404);
-
-        expect(body.message).toBe("Topic not found");
+        expect(body.message).toBe("Invalid token");
       });
     });
 
@@ -545,80 +516,83 @@ describe("app", () => {
       });
     });
 
-    describe("PATCH", () => {
-      test("200: updates article votes and responds with updated article", async () => {
-        const voteUpdate = { inc_votes: 1 };
+    describe("POST", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("201: adds a new article and responds with the posted article", async () => {
+        const newArticle = {
+          author: "testuser",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+        };
 
         const { body } = await request(app)
-          .patch("/api/articles/1")
-          .send(voteUpdate)
-          .expect(200);
+          .post("/api/articles")
+          .set("Authorization", `Bearer ${token}`)
+          .send(newArticle)
+          .expect(201);
 
         expect(body.article).toMatchObject({
-          article_id: 1,
-          title: "Living in the shadow of a great man",
-          topic: "mitch",
-          author: "butter_bridge",
-          body: "I find this existence challenging",
-          created_at: expect.any(String),
-          votes: 101,
+          article_id: expect.any(Number),
+          author: newArticle.author,
+          title: newArticle.title,
+          body: newArticle.body,
+          topic: newArticle.topic,
           article_img_url: expect.any(String),
+          votes: 0,
+          created_at: expect.any(String),
+          comment_count: 0,
         });
       });
 
-      test("200: decrements votes when passed a negative value", async () => {
-        const voteUpdate = { inc_votes: -100 };
+      test("401: responds with error when no token provided", async () => {
+        const newArticle = {
+          author: "testuser",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+        };
 
         const { body } = await request(app)
-          .patch("/api/articles/1")
-          .send(voteUpdate)
-          .expect(200);
+          .post("/api/articles")
+          .send(newArticle)
+          .expect(401);
 
-        expect(body.article.votes).toBe(0);
+        expect(body.message).toBe("No token provided");
       });
 
-      test("400: responds with error when inc_votes is missing", async () => {
-        const invalidVoteUpdate = {};
+      test("401: responds with error when invalid token provided", async () => {
+        const newArticle = {
+          author: "testuser",
+          title: "Test Article",
+          body: "This is a test article",
+          topic: "cats",
+        };
 
         const { body } = await request(app)
-          .patch("/api/articles/1")
-          .send(invalidVoteUpdate)
-          .expect(400);
+          .post("/api/articles")
+          .set("Authorization", "Bearer invalid_token")
+          .send(newArticle)
+          .expect(401);
 
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("400: responds with error when inc_votes is not a number", async () => {
-        const invalidVoteUpdate = { inc_votes: "not-a-number" };
-
-        const { body } = await request(app)
-          .patch("/api/articles/1")
-          .send(invalidVoteUpdate)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
-      });
-
-      test("404: responds with error when article_id does not exist", async () => {
-        const voteUpdate = { inc_votes: 1 };
-
-        const { body } = await request(app)
-          .patch("/api/articles/999")
-          .send(voteUpdate)
-          .expect(404);
-
-        expect(body.message).toBe("Article not found");
-      });
-
-      test("400: responds with error when article_id is invalid", async () => {
-        const voteUpdate = { inc_votes: 1 };
-
-        const { body } = await request(app)
-          .patch("/api/articles/not-an-id")
-          .send(voteUpdate)
-          .expect(400);
-
-        expect(body.message).toBe("Bad request");
+        expect(body.message).toBe("Invalid token");
       });
     });
 

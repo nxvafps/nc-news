@@ -8,6 +8,7 @@ const {
   postArticle,
   deleteArticleById,
 } = require("../controllers/article.controller");
+const { authenticate } = require("../middlewares/auth");
 const { forbiddenMethod } = require("./utils/forbidden-method");
 
 /**
@@ -143,7 +144,7 @@ articlesRouter.get("/", getArticles);
  *       401:
  *         description: Unauthorized - authentication required
  */
-articlesRouter.post("/", postArticle);
+articlesRouter.post("/", authenticate, postArticle);
 articlesRouter.patch("/", forbiddenMethod);
 articlesRouter.delete("/", forbiddenMethod);
 
@@ -201,6 +202,8 @@ articlesRouter.post("/:article_id", forbiddenMethod);
  *   patch:
  *     summary: Update article votes
  *     tags: [Articles]
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: article_id
@@ -253,7 +256,7 @@ articlesRouter.post("/:article_id", forbiddenMethod);
  *       404:
  *         description: Article not found
  */
-articlesRouter.patch("/:article_id", updateArticleVotes);
+articlesRouter.patch("/:article_id", authenticate, updateArticleVotes);
 /**
  * @swagger
  * /api/articles/{article_id}:
