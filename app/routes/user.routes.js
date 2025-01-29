@@ -2,8 +2,10 @@ const usersRouter = require("express").Router();
 const {
   getUsers,
   getUserByUsername,
+  updateUserProfile,
 } = require("../controllers/user.controller");
 const { forbiddenMethod } = require("./utils/forbidden-method");
+const { authenticate } = require("../middlewares/auth");
 
 /**
  * @swagger
@@ -78,7 +80,61 @@ usersRouter.delete("/", forbiddenMethod);
  */
 usersRouter.get("/:username", getUserByUsername);
 usersRouter.post("/:username", forbiddenMethod);
-usersRouter.patch("/:username", forbiddenMethod);
+/**
+ * @swagger
+ * /api/users/{username}:
+ *   patch:
+ *     summary: Update user profile
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Username of the profile to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User's full name
+ *               avatar_url:
+ *                 type: string
+ *                 format: uri
+ *                 description: URL to user's avatar image
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     username:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     avatar_url:
+ *                       type: string
+ *                       format: uri
+ *       401:
+ *         description: Unauthorized - authentication required
+ *       403:
+ *         description: Forbidden - cannot update other users
+ *       404:
+ *         description: User not found
+ */
+usersRouter.patch("/:username", authenticate, updateUserProfile);
 usersRouter.delete("/:username", forbiddenMethod);
 
 module.exports = usersRouter;

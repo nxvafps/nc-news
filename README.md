@@ -138,6 +138,7 @@ Authentication endpoints:
 - POST /api/articles/:article_id/comments
 - PATCH /api/comments/:comment_id
 - DELETE /api/comments/:comment_id (owner only)
+- PATCH /api/users/:username (owner only)
 
 For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)
 

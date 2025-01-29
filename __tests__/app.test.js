@@ -1217,11 +1217,67 @@ describe("app", () => {
       });
     });
     describe("PATCH", () => {
-      test("405: responds with error for PATCH method", async () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("200: updates user profile and returns updated user", async () => {
+        const updates = {
+          name: "Updated Name",
+          avatar_url: "https://new-avatar-url.com/image.jpg",
+        };
+
         const { body } = await request(app)
-          .patch("/api/users/name")
-          .expect(405);
-        expect(body.message).toBe("Method not allowed");
+          .patch("/api/users/testuser")
+          .set("Authorization", `Bearer ${token}`)
+          .send(updates)
+          .expect(200);
+
+        expect(body.user).toMatchObject({
+          username: "testuser",
+          name: updates.name,
+          avatar_url: updates.avatar_url,
+        });
+      });
+
+      test("401: responds with error when no token provided", async () => {
+        const { body } = await request(app)
+          .patch("/api/users/testuser")
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("403: responds with error when trying to update another user's profile", async () => {
+        const { body } = await request(app)
+          .patch("/api/users/butter_bridge")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(403);
+
+        expect(body.message).toBe("Cannot update other users");
+      });
+
+      test("404: responds with error when username does not exist", async () => {
+        const { body } = await request(app)
+          .patch("/api/users/nonexistent")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(404);
+
+        expect(body.message).toBe("User not found");
       });
     });
     describe("DELETE", () => {
