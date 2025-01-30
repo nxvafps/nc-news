@@ -21,6 +21,12 @@ exports.getArticles = async (req, res, next) => {
     p = 1,
   } = req.query;
 
+  if (topic?.toLowerCase() === "tea" || topic?.toLowerCase() === "coffee") {
+    return next(
+      AppError.teapot("I'm a teapot, I cannot make articles about beverages!")
+    );
+  }
+
   try {
     const page = parseInt(p);
     const limitNum = parseInt(limit);
