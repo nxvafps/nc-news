@@ -35,6 +35,10 @@ class AppError extends Error {
   static internal(message) {
     return new AppError(message || "Internal server error", 500);
   }
+
+  static teapot(message) {
+    return new AppError(message || "I'm a teapot", 418);
+  }
 }
 
 module.exports = AppError;
