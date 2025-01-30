@@ -201,6 +201,11 @@
       }
     }
   },
+  "DELETE /api/users/:username": {
+    "description": "deletes a user account",
+    "queries": [],
+    "exampleResponse": {}
+  },
   "PUT /api/users/:username/avatar": {
     "description": "updates a user's avatar URL",
     "queries": [],

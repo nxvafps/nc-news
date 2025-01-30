@@ -5,6 +5,7 @@ const {
   getUserByUsername,
   updateUserProfile,
   updateUserAvatar,
+  deleteUserAccount,
 } = require("../controllers/user.controller");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
 const { authenticate } = require("../middlewares/auth");
@@ -137,7 +138,33 @@ singleUserRouter.get("/", getUserByUsername);
  *         description: User not found
  */
 singleUserRouter.patch("/", authenticate, updateUserProfile);
-handleForbiddenMethods(singleUserRouter, ["GET", "PATCH"]);
+/**
+ * @swagger
+ * /api/users/{username}:
+ *   delete:
+ *     summary: Delete user account
+ *     tags: [Users]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Username of the account to delete
+ *     responses:
+ *       204:
+ *         description: Account successfully deleted
+ *       401:
+ *         description: Unauthorized - authentication required
+ *       403:
+ *         description: Forbidden - cannot delete other users
+ *       404:
+ *         description: User not found
+ */
+singleUserRouter.delete("/", authenticate, deleteUserAccount);
+handleForbiddenMethods(singleUserRouter, ["GET", "PATCH", "DELETE"]);
 usersRouter.use("/:username", singleUserRouter);
 
 const avatarRouter = express.Router({ mergeParams: true });

@@ -4,6 +4,7 @@ const {
   selectUserByUsername,
   updateUserProfileById,
   updateUserAvatarById,
+  removeUserById,
 } = require("../models/user.model");
 
 const AppError = require("../utils/app-error");
@@ -68,6 +69,26 @@ exports.updateUserAvatar = async (req, res, next) => {
 
     const user = await updateUserAvatarById(username, avatar_url);
     res.status(200).send({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteUserAccount = async (req, res, next) => {
+  try {
+    const { username } = req.params;
+
+    const checkUser = await findUserByUsername(username);
+    if (!checkUser) {
+      throw AppError.notFound("User not found");
+    }
+
+    if (username !== req.user.username) {
+      throw AppError.forbidden("Cannot delete other users");
+    }
+
+    await removeUserById(username);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }
