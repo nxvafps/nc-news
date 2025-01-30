@@ -7,6 +7,7 @@ const {
   updateArticleVotes,
   postArticle,
   deleteArticleById,
+  updateArticleBody,
 } = require("../controllers/article.controller");
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
@@ -208,6 +209,69 @@ singleArticleRouter.get("/", getArticleById);
 /**
  * @swagger
  * /api/articles/{article_id}:
+ *   put:
+ *     summary: Update article text
+ *     tags: [Articles]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: article_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The article ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - body
+ *             properties:
+ *               body:
+ *                 type: string
+ *                 description: The new text for the article
+ *     responses:
+ *       200:
+ *         description: Article updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 article:
+ *                   type: object
+ *                   properties:
+ *                     article_id:
+ *                       type: integer
+ *                     title:
+ *                       type: string
+ *                     topic:
+ *                       type: string
+ *                     author:
+ *                       type: string
+ *                     body:
+ *                       type: string
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     votes:
+ *                       type: integer
+ *       401:
+ *         description: Unauthorized - authentication required
+ *       403:
+ *         description: Forbidden - user does not own the article
+ *       404:
+ *         description: Article not found
+ *       400:
+ *         description: Bad request - missing body
+ */
+singleArticleRouter.put("/", authenticate, updateArticleBody);
+/**
+ * @swagger
+ * /api/articles/{article_id}:
  *   patch:
  *     summary: Update article votes
  *     tags: [Articles]
@@ -294,7 +358,7 @@ singleArticleRouter.patch("/", authenticate, updateArticleVotes);
  *         description: Invalid article_id format
  */
 singleArticleRouter.delete("/", authenticate, deleteArticleById);
-handleForbiddenMethods(singleArticleRouter, ["GET", "PATCH", "DELETE"]);
+handleForbiddenMethods(singleArticleRouter, ["GET", "PUT", "PATCH", "DELETE"]);
 articlesRouter.use("/:article_id", singleArticleRouter);
 
 // /api/articles/:article_id/comments

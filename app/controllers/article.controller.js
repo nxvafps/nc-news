@@ -6,6 +6,7 @@ const {
   updateArticleVotesById,
   insertArticle,
   removeArticleById,
+  updateArticleBodyById,
 } = require("../models/article.model");
 
 const AppError = require("../utils/app-error");
@@ -124,6 +125,29 @@ exports.deleteArticleById = async (req, res, next) => {
 
     await removeArticleById(article_id);
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateArticleBody = async (req, res, next) => {
+  const { article_id } = req.params;
+  const { body: newBody } = req.body;
+  const { username } = req.user;
+
+  try {
+    if (!newBody) {
+      throw AppError.badRequest("Bad request");
+    }
+
+    const article = await selectArticleById(article_id);
+
+    if (article.author !== username) {
+      throw AppError.forbidden("Forbidden - user does not own the article");
+    }
+
+    const updatedArticle = await updateArticleBodyById(article_id, newBody);
+    res.status(200).send({ article: updatedArticle });
   } catch (err) {
     next(err);
   }
