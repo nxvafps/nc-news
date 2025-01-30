@@ -971,6 +971,138 @@ describe("app", () => {
         expect(body.message).toBe("Method not allowed");
       });
     });
+    describe("PUT", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("200: updates comment text when authenticated as owner", async () => {
+        const newComment = {
+          body: "Original comment text",
+        };
+
+        const commentResponse = await request(app)
+          .post("/api/articles/1/comments")
+          .set("Authorization", `Bearer ${token}`)
+          .send(newComment);
+
+        const commentId = commentResponse.body.comment.comment_id;
+
+        const update = {
+          body: "Updated comment text",
+        };
+
+        const { body } = await request(app)
+          .put(`/api/comments/${commentId}`)
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(200);
+
+        expect(body.comment).toMatchObject({
+          comment_id: commentId,
+          body: update.body,
+          article_id: 1,
+          author: "testuser",
+          votes: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+
+      test("401: responds with error when no token provided", async () => {
+        const update = {
+          body: "Updated text",
+        };
+
+        const { body } = await request(app)
+          .put("/api/comments/1")
+          .send(update)
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("401: responds with error when invalid token provided", async () => {
+        const update = {
+          body: "Updated text",
+        };
+
+        const { body } = await request(app)
+          .put("/api/comments/1")
+          .set("Authorization", "Bearer invalid_token")
+          .send(update)
+          .expect(401);
+
+        expect(body.message).toBe("Invalid token");
+      });
+
+      test("403: responds with error when user is not the comment owner", async () => {
+        const update = {
+          body: "Updated text",
+        };
+
+        const { body } = await request(app)
+          .put("/api/comments/1")
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(403);
+
+        expect(body.message).toBe("Forbidden - user does not own the comment");
+      });
+
+      test("404: responds with error when comment_id does not exist", async () => {
+        const update = {
+          body: "Updated text",
+        };
+
+        const { body } = await request(app)
+          .put("/api/comments/999")
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(404);
+
+        expect(body.message).toBe("Comment not found");
+      });
+
+      test("400: responds with error when comment_id is invalid", async () => {
+        const update = {
+          body: "Updated text",
+        };
+
+        const { body } = await request(app)
+          .put("/api/comments/not-a-number")
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+
+      test("400: responds with error when body field is missing", async () => {
+        const invalidUpdate = {};
+
+        const { body } = await request(app)
+          .put("/api/comments/1")
+          .set("Authorization", `Bearer ${token}`)
+          .send(invalidUpdate)
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
     describe("POST", () => {
       test("405: responds with error for POST method", async () => {
         const { body } = await request(app).post("/api/comments/1").expect(405);

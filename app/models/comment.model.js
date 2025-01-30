@@ -53,3 +53,23 @@ exports.selectCommentById = async (comment_id) => {
 
   return result.rows[0];
 };
+
+exports.updateCommentBodyById = async (comment_id, body) => {
+  if (!body) {
+    throw AppError.badRequest("Bad request - body is required");
+  }
+
+  const result = await db.query(
+    `UPDATE comments
+     SET body = $1
+     WHERE comment_id = $2
+     RETURNING *`,
+    [body, comment_id]
+  );
+
+  if (result.rows.length === 0) {
+    throw AppError.notFound("Comment not found");
+  }
+
+  return result.rows[0];
+};
