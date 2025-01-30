@@ -175,6 +175,7 @@ All available endpoints:
 - DELETE /api/articles/:article_id
 - GET /api/articles/:article_id/comments
 - POST /api/articles/:article_id/comments
+- PUT /api/comments/:comment_id
 - PATCH /api/comments/:comment_id
 - DELETE /api/comments/:comment_id
 - GET /api/users
@@ -195,6 +196,7 @@ Authentication endpoints:
 - DELETE /api/articles/:article_id
 - POST /api/topics
 - POST /api/articles/:article_id/comments
+- PUT /api/comments/:comment_id (owner only)
 - PATCH /api/comments/:comment_id
 - DELETE /api/comments/:comment_id (owner only)
 - PATCH /api/users/:username (owner only)

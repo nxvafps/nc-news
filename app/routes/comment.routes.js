@@ -2,6 +2,7 @@ const express = require("express");
 const {
   deleteCommentById,
   updateCommentVotes,
+  updateCommentBody,
 } = require("../controllers/comment.controller");
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
@@ -10,6 +11,65 @@ const commentsRouter = express.Router();
 
 // /api/comments/:comment_id
 const singleCommentRouter = express.Router({ mergeParams: true });
+/**
+ * @swagger
+ * /api/comments/{comment_id}:
+ *   put:
+ *     summary: Update comment text
+ *     tags: [Comments]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: comment_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The comment ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - body
+ *             properties:
+ *               body:
+ *                 type: string
+ *                 description: The new text for the comment
+ *     responses:
+ *       200:
+ *         description: Comment text updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 comment:
+ *                   type: object
+ *                   properties:
+ *                     comment_id:
+ *                       type: integer
+ *                     body:
+ *                       type: string
+ *                     article_id:
+ *                       type: integer
+ *                     author:
+ *                       type: string
+ *                     votes:
+ *                       type: integer
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *       401:
+ *         description: Unauthorized - authentication required
+ *       403:
+ *         description: Forbidden - user does not own the comment
+ *       404:
+ *         description: Comment not found
+ */
+singleCommentRouter.put("/", authenticate, updateCommentBody);
 /**
  * @swagger
  * /api/comments/{comment_id}:
@@ -93,7 +153,7 @@ singleCommentRouter.patch("/", authenticate, updateCommentVotes);
  *         description: Invalid comment_id format
  */
 singleCommentRouter.delete("/", authenticate, deleteCommentById);
-handleForbiddenMethods(singleCommentRouter, ["PATCH", "DELETE"]);
+handleForbiddenMethods(singleCommentRouter, ["PATCH", "DELETE", "PUT"]);
 commentsRouter.use("/:comment_id", singleCommentRouter);
 
 module.exports = commentsRouter;
