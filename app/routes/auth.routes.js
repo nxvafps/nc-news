@@ -1,13 +1,16 @@
 const express = require("express");
-const authRouter = require("express").Router();
 const { signup, login, getMe } = require("../controllers/auth.controller");
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
+const authRouter = express.Router();
+
+// /api/auth
 const rootRouter = express.Router();
 handleForbiddenMethods(rootRouter, []);
 authRouter.use("/", rootRouter);
 
+// /api/auth/signup
 const signupRouter = express.Router();
 /**
  * @swagger
@@ -70,6 +73,7 @@ signupRouter.post("/", signup);
 handleForbiddenMethods(signupRouter, ["POST"]);
 authRouter.use("/signup", signupRouter);
 
+// /api/auth/login
 const loginRouter = express.Router();
 /**
  * @swagger
@@ -124,6 +128,7 @@ loginRouter.post("/", login);
 handleForbiddenMethods(loginRouter, ["POST"]);
 authRouter.use("/login", loginRouter);
 
+// /api/auth/me
 const meRouter = express.Router();
 /**
  * @swagger

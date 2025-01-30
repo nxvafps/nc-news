@@ -1,5 +1,4 @@
 const express = require("express");
-const articlesRouter = require("express").Router();
 const {
   getArticles,
   getArticleById,
@@ -12,6 +11,9 @@ const {
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
+const articlesRouter = express.Router();
+
+// /api/articles/
 const rootRouter = express.Router();
 /**
  * @swagger
@@ -150,6 +152,7 @@ rootRouter.post("/", authenticate, postArticle);
 handleForbiddenMethods(rootRouter, ["GET", "POST"]);
 articlesRouter.use("/", rootRouter);
 
+// /api/articles/:article_id
 const singleArticleRouter = express.Router({ mergeParams: true });
 /**
  * @swagger
@@ -290,6 +293,7 @@ singleArticleRouter.delete("/", authenticate, deleteArticleById);
 handleForbiddenMethods(singleArticleRouter, ["GET", "PATCH", "DELETE"]);
 articlesRouter.use("/:article_id", singleArticleRouter);
 
+// /api/articles/:article_id/comments
 const commentsRouter = express.Router({ mergeParams: true });
 /**
  * @swagger

@@ -20,11 +20,15 @@ Northcoders News API is a RESTful API that provides news articles, comments, and
 - JWT (Authentication)
 - bcrypt (Password Hashing)
 - Swagger (API Documentation)
+- Winston (Logging)
 
 ## ⚙️ Prerequisites
 
-- Node.js >= 14.0.0
-- PostgreSQL >= 12.0.0
+- Node.js >= 18.0.0 (LTS reccomended)
+- PostgreSQL >= 14.0.0
+- Docker & Docker Compose
+  - [Install Docker](https://docs.docker.com/get-docker/)
+  - [Install Docker Compose](https://docs.docker.com/compose/install/)
 
 ## 🔧 Installation & Setup
 
@@ -117,7 +121,7 @@ JWT_SECRET=your_secure_secret
 
 ```bash
 # Development mode
-npm run docker-dev
+npm run docker-build
 
 # Or production mode
 npm run setup-all
@@ -175,7 +179,7 @@ All available endpoints:
 - DELETE /api/comments/:comment_id
 - GET /api/users
 - GET /api/users/:username
-- DELETE /api/users/:username (owner only)
+- DELETE /api/users/:username
 - PUT /api/users/:username/avatar
 
 Authentication endpoints:
@@ -214,6 +218,29 @@ Rate limit information is included in the response headers:
 - `RateLimit-Limit`: Maximum number of requests allowed
 - `RateLimit-Remaining`: Number of requests remaining in the current time window
 - `RateLimit-Reset`: Time when the rate limit will reset (in Unix epoch seconds)
+
+### Logging
+
+The application uses Winston for logging with the following configuration:
+
+#### Log Files
+
+- `logs/error.log` - Contains error-level logs only
+- `logs/combined.log` - Contains all log levels
+
+#### Environment-specific Behavior
+
+- Development: Logs to both files and console
+- Production: Logs to files only
+- Test: Silent logging (no output)
+
+#### Configuration
+
+Log level can be configured via environment variables:
+
+```env
+LOG_LEVEL=info # Optional: Set custom logging level (error, warn, info, debug)
+```
 
 ## 🚀 Local Development
 

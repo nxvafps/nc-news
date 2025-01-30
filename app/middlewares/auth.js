@@ -4,7 +4,7 @@ const AppError = require("../utils/app-error");
 exports.authenticate = async (req, res, next) => {
   try {
     const token = extractTokenFromHeader(req);
-    const decoded = await verifyToken(token);
+    const decoded = verifyToken(token);
 
     req.user = { username: decoded.username };
     next();
