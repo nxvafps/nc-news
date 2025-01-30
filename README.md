@@ -118,7 +118,7 @@ JWT_SECRET=your_secure_secret
 
 ```bash
 # Development mode
-npm run docker-dev
+npm run docker-build
 
 # Or production mode
 npm run setup-all
@@ -176,7 +176,7 @@ All available endpoints:
 - DELETE /api/comments/:comment_id
 - GET /api/users
 - GET /api/users/:username
-- DELETE /api/users/:username (owner only)
+- DELETE /api/users/:username
 - PUT /api/users/:username/avatar
 
 Authentication endpoints:

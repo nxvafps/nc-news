@@ -1,5 +1,4 @@
 const express = require("express");
-const commentsRouter = require("express").Router();
 const {
   deleteCommentById,
   updateCommentVotes,
@@ -7,6 +6,9 @@ const {
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
+const commentsRouter = express.Router();
+
+// /api/comments/:comment_id
 const singleCommentRouter = express.Router({ mergeParams: true });
 /**
  * @swagger

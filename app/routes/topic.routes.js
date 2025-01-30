@@ -1,9 +1,11 @@
 const express = require("express");
-const topicsRouter = require("express").Router();
 const { getTopics, postTopic } = require("../controllers/topic.controller");
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
 
+const topicsRouter = express.Router();
+
+// /api/topics
 const rootRouter = express.Router();
 /**
  * @swagger
