@@ -1281,11 +1281,61 @@ describe("app", () => {
       });
     });
     describe("DELETE", () => {
-      test("405: responds with error for DELETE method", async () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("204: successfully deletes user account when authenticated as owner", async () => {
+        await request(app)
+          .delete("/api/users/testuser")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(204);
+
         const { body } = await request(app)
-          .delete("/api/users/name")
-          .expect(405);
-        expect(body.message).toBe("Method not allowed");
+          .get("/api/users/testuser")
+          .expect(404);
+
+        expect(body.message).toBe("User not found");
+      });
+
+      test("401: responds with error when no token provided", async () => {
+        const { body } = await request(app)
+          .delete("/api/users/testuser")
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("403: responds with error when trying to delete another user's account", async () => {
+        const { body } = await request(app)
+          .delete("/api/users/butter_bridge")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(403);
+
+        expect(body.message).toBe("Cannot delete other users");
+      });
+
+      test("404: responds with error when username does not exist", async () => {
+        const { body } = await request(app)
+          .delete("/api/users/nonexistent")
+          .set("Authorization", `Bearer ${token}`)
+          .expect(404);
+
+        expect(body.message).toBe("User not found");
       });
     });
   });

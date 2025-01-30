@@ -95,6 +95,58 @@ npm run setup-dbs
 npm run seed
 ```
 
+## 🐳 Docker Setup
+
+1. Make sure you have Docker and Docker Compose installed on your system.
+
+2. Create a `.env` file in the root directory with the following environment variables:
+
+```env
+POSTGRES_USER=your_postgres_user
+POSTGRES_PASSWORD=your_postgres_password
+POSTGRES_DB=your_database_name
+PGUSER=your_postgres_user
+PGPASSWORD=your_postgres_password
+PGDATABASE=your_database_name
+PGHOST=db
+NODE_ENV=development
+JWT_SECRET=your_secure_secret
+```
+
+3. Build and start the containers:
+
+```bash
+# Development mode
+npm run docker-dev
+
+# Or production mode
+npm run setup-all
+```
+
+4. The API will be available at:
+
+   - API: http://localhost:8080/api
+   - Documentation: http://localhost:8080/api-docs
+
+5. To stop the containers:
+
+```bash
+npm run docker-stop
+```
+
+### Docker Commands Reference
+
+- `npm run docker-dev` - Start development environment with Docker
+- `npm run docker-stop` - Stop Docker containers
+- `npm run setup-all` - Setup production environment (Docker + DB setup)
+
+The Docker setup includes:
+
+- Node.js application container
+- PostgreSQL database container
+- Automatic database healthcheck
+- Volume persistence for database data
+
 ## 🚦 Available Scripts
 
 - `npm start` - Start the server
@@ -123,6 +175,7 @@ All available endpoints:
 - DELETE /api/comments/:comment_id
 - GET /api/users
 - GET /api/users/:username
+- DELETE /api/users/:username (owner only)
 - PUT /api/users/:username/avatar
 
 Authentication endpoints:
@@ -141,6 +194,7 @@ Authentication endpoints:
 - PATCH /api/comments/:comment_id
 - DELETE /api/comments/:comment_id (owner only)
 - PATCH /api/users/:username (owner only)
+- DELETE /api/users/:username (owner only)
 - PUT /api/users/:username/avatar (owner only)
 
 For full API documentation, visit: [API Documentation](http://ncnews.novafps.com/api-docs)

@@ -59,3 +59,43 @@ exports.updateUserAvatarById = async (username, avatar_url) => {
 
   return result.rows[0];
 };
+
+exports.removeUserById = async (username) => {
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+
+    await client.query(
+      `DELETE FROM comments 
+       WHERE author = $1`,
+      [username]
+    );
+
+    await client.query(
+      `DELETE FROM articles 
+       WHERE author = $1`,
+      [username]
+    );
+
+    const result = await client.query(
+      `DELETE FROM users 
+       WHERE username = $1 
+       RETURNING *`,
+      [username]
+    );
+
+    await client.query("COMMIT");
+
+    if (result.rows.length === 0) {
+      throw AppError.notFound("User not found");
+    }
+
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+};
