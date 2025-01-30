@@ -170,6 +170,7 @@ All available endpoints:
 - POST /api/topics
 - GET /api/articles
 - POST /api/articles
+- GET /api/articles/search?q=search_term
 - GET /api/articles/:article_id
 - PUT /api/articles/:article_id
 - PATCH /api/articles/:article_id

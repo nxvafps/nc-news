@@ -7,16 +7,14 @@ const logger = winston.createLogger({
     winston.format.timestamp(),
     winston.format.json()
   ),
-  transports: [],
-});
-
-if (process.env.NODE_ENV === "test") {
-  logger.add(
+  transports: [
     new winston.transports.Console({
       silent: true,
-    })
-  );
-} else {
+    }),
+  ],
+});
+
+if (process.env.NODE_ENV !== "test") {
   logger.add(
     new winston.transports.File({
       filename: "logs/error.log",

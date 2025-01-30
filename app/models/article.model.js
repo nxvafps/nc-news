@@ -272,6 +272,48 @@ const updateArticleBodyById = async (article_id, body) => {
   return result.rows[0];
 };
 
+const fetchSearchArticles = async (searchQuery, limit = 10, p = 1) => {
+  if (!searchQuery) {
+    throw AppError.badRequest("Search query required");
+  }
+
+  const offset = (p - 1) * limit;
+
+  const searchSql = `
+    SELECT 
+      articles.*,
+      COUNT(comments.comment_id) AS comment_count
+    FROM articles
+    LEFT JOIN comments ON articles.article_id = comments.article_id
+    WHERE 
+      LOWER(articles.title) LIKE LOWER($1) OR
+      LOWER(articles.body) LIKE LOWER($1)
+    GROUP BY articles.article_id
+    ORDER BY articles.created_at DESC
+    LIMIT $2 OFFSET $3;
+  `;
+
+  const countSql = `
+    SELECT COUNT(*)::INT
+    FROM articles
+    WHERE 
+      LOWER(title) LIKE LOWER($1) OR
+      LOWER(body) LIKE LOWER($1);
+  `;
+
+  const searchTerm = `%${searchQuery}%`;
+
+  const [articles, count] = await Promise.all([
+    db.query(searchSql, [searchTerm, limit, offset]),
+    db.query(countSql, [searchTerm]),
+  ]);
+
+  return {
+    articles: articles.rows,
+    total_count: count.rows[0].count,
+  };
+};
+
 module.exports = {
   selectArticles,
   selectArticleById,
@@ -281,4 +323,5 @@ module.exports = {
   insertArticle,
   removeArticleById,
   updateArticleBodyById,
+  fetchSearchArticles,
 };
