@@ -15,10 +15,12 @@ const {
   authLimiter,
   apiLimiter,
 } = require("./middlewares/rate-limit");
+const { requestLogger } = require("./middlewares/request-logger");
 
 const app = express();
 
 app.use(express.json());
+app.use(requestLogger);
 
 //rate limiting middleware
 if (process.env.NODE_ENV !== "test") {
