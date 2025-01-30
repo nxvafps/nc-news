@@ -171,6 +171,7 @@ All available endpoints:
 - GET /api/articles
 - POST /api/articles
 - GET /api/articles/:article_id
+- PUT /api/articles/:article_id
 - PATCH /api/articles/:article_id
 - DELETE /api/articles/:article_id
 - GET /api/articles/:article_id/comments
@@ -192,6 +193,7 @@ Authentication endpoints:
 ### Protected Endpoints (require authentication)
 
 - POST /api/articles
+- PUT /api/articles/:article_id (owner only)
 - PATCH /api/articles/:article_id
 - DELETE /api/articles/:article_id
 - POST /api/topics

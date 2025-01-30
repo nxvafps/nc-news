@@ -522,6 +522,104 @@ describe("app", () => {
       });
     });
 
+    describe("PUT", () => {
+      let token;
+
+      beforeEach(async () => {
+        await request(app).post("/api/auth/signup").send({
+          username: "testuser",
+          name: "Test User",
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        const loginResponse = await request(app).post("/api/auth/login").send({
+          email: "test@example.com",
+          password: "password123",
+        });
+
+        token = loginResponse.body.token;
+      });
+
+      test("200: updates article body when authenticated as owner", async () => {
+        const newArticle = {
+          author: "testuser",
+          title: "Test Article",
+          body: "Original article text",
+          topic: "cats",
+        };
+
+        const articleResponse = await request(app)
+          .post("/api/articles")
+          .set("Authorization", `Bearer ${token}`)
+          .send(newArticle);
+
+        const articleId = articleResponse.body.article.article_id;
+
+        const update = {
+          body: "Updated article text",
+        };
+
+        const { body } = await request(app)
+          .put(`/api/articles/${articleId}`)
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(200);
+
+        expect(body.article).toMatchObject({
+          article_id: articleId,
+          body: update.body,
+          author: "testuser",
+          title: "Test Article",
+          topic: "cats",
+          votes: 0,
+          created_at: expect.any(String),
+        });
+      });
+
+      test("401: responds with error when no token provided", async () => {
+        const update = { body: "Updated text" };
+        const { body } = await request(app)
+          .put("/api/articles/1")
+          .send(update)
+          .expect(401);
+
+        expect(body.message).toBe("No token provided");
+      });
+
+      test("403: responds with error when user is not the article owner", async () => {
+        const update = { body: "Updated text" };
+        const { body } = await request(app)
+          .put("/api/articles/1")
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(403);
+
+        expect(body.message).toBe("Forbidden - user does not own the article");
+      });
+
+      test("404: responds with error when article_id does not exist", async () => {
+        const update = { body: "Updated text" };
+        const { body } = await request(app)
+          .put("/api/articles/999")
+          .set("Authorization", `Bearer ${token}`)
+          .send(update)
+          .expect(404);
+
+        expect(body.message).toBe("Article not found");
+      });
+
+      test("400: responds with error when body field is missing", async () => {
+        const { body } = await request(app)
+          .put("/api/articles/1")
+          .set("Authorization", `Bearer ${token}`)
+          .send({})
+          .expect(400);
+
+        expect(body.message).toBe("Bad request");
+      });
+    });
+
     describe("POST", () => {
       test("405: responds with error for POST method", async () => {
         const { body } = await request(app).post("/api/articles/1").expect(405);

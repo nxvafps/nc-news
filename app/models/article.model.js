@@ -256,6 +256,22 @@ const removeArticleById = async (article_id) => {
   }
 };
 
+const updateArticleBodyById = async (article_id, body) => {
+  const result = await db.query(
+    `UPDATE articles
+     SET body = $1
+     WHERE article_id = $2
+     RETURNING *`,
+    [body, article_id]
+  );
+
+  if (result.rows.length === 0) {
+    throw AppError.notFound("Article not found");
+  }
+
+  return result.rows[0];
+};
+
 module.exports = {
   selectArticles,
   selectArticleById,
@@ -264,4 +280,5 @@ module.exports = {
   updateArticleVotesById,
   insertArticle,
   removeArticleById,
+  updateArticleBodyById,
 };
