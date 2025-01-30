@@ -26,7 +26,7 @@ Northcoders News API is a RESTful API that provides news articles, comments, and
 
 - Node.js >= 18.0.0 (LTS reccomended)
 - PostgreSQL >= 14.0.0
-- - Docker & Docker Compose
+- Docker & Docker Compose
   - [Install Docker](https://docs.docker.com/get-docker/)
   - [Install Docker Compose](https://docs.docker.com/compose/install/)
 
