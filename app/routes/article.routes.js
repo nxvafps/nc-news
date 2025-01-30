@@ -140,9 +140,13 @@ rootRouter.get("/", getArticles);
  *                       type: string
  *                     author:
  *                       type: string
+ *                     votes:
+ *                       type: integer
  *                     created_at:
  *                       type: string
  *                       format: date-time
+ *                     comment_count:
+ *                       type: integer
  *       400:
  *         description: Bad request - missing or invalid fields
  *       401:
