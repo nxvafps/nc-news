@@ -8,6 +8,7 @@ const {
   postArticle,
   deleteArticleById,
   updateArticleBody,
+  searchArticles,
 } = require("../controllers/article.controller");
 const { authenticate } = require("../middlewares/auth");
 const { handleForbiddenMethods } = require("./utils/forbidden-method");
@@ -156,6 +157,74 @@ rootRouter.get("/", getArticles);
 rootRouter.post("/", authenticate, postArticle);
 handleForbiddenMethods(rootRouter, ["GET", "POST"]);
 articlesRouter.use("/", rootRouter);
+
+// /api/articles/search
+const searchRouter = express.Router();
+/**
+ * @swagger
+ * /api/articles/search:
+ *   get:
+ *     summary: Search articles by title or body content
+ *     tags: [Articles]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search term
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of articles per page
+ *         default: 10
+ *       - in: query
+ *         name: p
+ *         schema:
+ *           type: integer
+ *         description: Page number
+ *         default: 1
+ *     responses:
+ *       200:
+ *         description: List of matching articles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 articles:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       article_id:
+ *                         type: integer
+ *                       title:
+ *                         type: string
+ *                       topic:
+ *                         type: string
+ *                       author:
+ *                         type: string
+ *                       body:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       votes:
+ *                         type: integer
+ *                       article_img_url:
+ *                         type: string
+ *                       comment_count:
+ *                         type: integer
+ *                 total_count:
+ *                   type: integer
+ *       400:
+ *         description: Search query missing or invalid pagination parameters
+ */
+searchRouter.get("/", searchArticles);
+handleForbiddenMethods(searchRouter, ["GET"]);
+articlesRouter.use("/search", searchRouter);
 
 // /api/articles/:article_id
 const singleArticleRouter = express.Router({ mergeParams: true });

@@ -7,6 +7,7 @@ const {
   insertArticle,
   removeArticleById,
   updateArticleBodyById,
+  fetchSearchArticles,
 } = require("../models/article.model");
 
 const AppError = require("../utils/app-error");
@@ -148,6 +149,27 @@ exports.updateArticleBody = async (req, res, next) => {
 
     const updatedArticle = await updateArticleBodyById(article_id, newBody);
     res.status(200).send({ article: updatedArticle });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.searchArticles = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+    const limit = parseInt(req.query.limit) || 10;
+    const p = parseInt(req.query.p) || 1;
+
+    if (!q) {
+      throw AppError.badRequest("Search query required");
+    }
+
+    const { articles, total_count } = await fetchSearchArticles(q, limit, p);
+
+    res.status(200).json({
+      articles,
+      total_count,
+    });
   } catch (err) {
     next(err);
   }

@@ -483,6 +483,51 @@ describe("app", () => {
     });
   });
 
+  describe("/api/articles/search", () => {
+    describe("GET", () => {
+      test("200: responds with articles matching search query in title or body", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/search?q=mitch")
+          .expect(200);
+
+        expect(Array.isArray(body.articles)).toBe(true);
+        expect(body.articles.length).toBeGreaterThan(0);
+        body.articles.forEach((article) => {
+          expect(
+            article.title.toLowerCase().includes("mitch") ||
+              article.body.toLowerCase().includes("mitch")
+          ).toBe(true);
+        });
+      });
+
+      test("200: supports pagination", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/search?q=the&limit=5&p=1")
+          .expect(200);
+
+        expect(body.articles).toHaveLength(5);
+        expect(body.total_count).toBeGreaterThan(5);
+      });
+
+      test("200: returns empty array when no matches found", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/search?q=xyznotfound")
+          .expect(200);
+
+        expect(body.articles).toEqual([]);
+        expect(body.total_count).toBe(0);
+      });
+
+      test("400: responds with error when no search query provided", async () => {
+        const { body } = await request(app)
+          .get("/api/articles/search")
+          .expect(400);
+
+        expect(body.message).toBe("Search query required");
+      });
+    });
+  });
+
   describe("/api/articles/:article_id", () => {
     describe("GET", () => {
       test("200: responds with a single article object with correct properties", async () => {
