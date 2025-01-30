@@ -20,6 +20,7 @@ Northcoders News API is a RESTful API that provides news articles, comments, and
 - JWT (Authentication)
 - bcrypt (Password Hashing)
 - Swagger (API Documentation)
+- Winston (Logging)
 
 ## ⚙️ Prerequisites
 
@@ -214,6 +215,29 @@ Rate limit information is included in the response headers:
 - `RateLimit-Limit`: Maximum number of requests allowed
 - `RateLimit-Remaining`: Number of requests remaining in the current time window
 - `RateLimit-Reset`: Time when the rate limit will reset (in Unix epoch seconds)
+
+### Logging
+
+The application uses Winston for logging with the following configuration:
+
+#### Log Files
+
+- `logs/error.log` - Contains error-level logs only
+- `logs/combined.log` - Contains all log levels
+
+#### Environment-specific Behavior
+
+- Development: Logs to both files and console
+- Production: Logs to files only
+- Test: Silent logging (no output)
+
+#### Configuration
+
+Log level can be configured via environment variables:
+
+```env
+LOG_LEVEL=info # Optional: Set custom logging level (error, warn, info, debug)
+```
 
 ## 🚀 Local Development
 
