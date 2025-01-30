@@ -1,4 +1,5 @@
 const { selectTopics, insertTopic } = require("../models/topic.model");
+const AppError = require("../utils/app-error");
 
 exports.getTopics = async (req, res, next) => {
   try {
@@ -11,6 +12,12 @@ exports.getTopics = async (req, res, next) => {
 
 exports.postTopic = async (req, res, next) => {
   const { slug, description } = req.body;
+
+  if (slug.toLowerCase() === "tea" || slug.toLowerCase() === "coffee") {
+    return next(
+      AppError.teapot("I'm a teapot, I cannot make articles about beverages!")
+    );
+  }
 
   try {
     const topic = await insertTopic(slug, description);
