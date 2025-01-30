@@ -6,12 +6,12 @@
   "scripts": {
     "setup-dbs": "psql -f ./db/setup.sql",
     "seed": "node ./db/seeds/run-seed.js",
-    "setup-all": "NODE_ENV=production docker-compose up -d && npm run setup-dbs && npm run seed && npm run start-prod",
     "dev": "nodemon app/listen.js",
-    "start-prod": "docker-compose up -d",
     "test": "jest --runInBand",
     "prepare": "husky install",
-    "docker-dev": "docker-compose up",
+    "docker-setup-all": "NODE_ENV=production docker-compose up -d && docker-compose exec app npm run setup-dbs && docker-compose exec app npm run seed",
+    "docker-build": "docker-compose up -d --build",
+    "docker-start": "docker-compose up -d",
     "docker-stop": "docker compose down"
   },
   "repository": {
