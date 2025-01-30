@@ -94,11 +94,12 @@ exports.updateArticleVotes = async (req, res, next) => {
 };
 
 exports.postArticle = async (req, res, next) => {
-  const { author, title, body, topic, article_img_url } = req.body;
+  const { title, body, topic, article_img_url } = req.body;
+  const { username } = req.user;
 
   try {
     const article = await insertArticle(
-      author,
+      username,
       title,
       body,
       topic,
