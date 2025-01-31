@@ -39,10 +39,68 @@ const verifyPassword = async (password, hashedPassword) => {
   }
 };
 
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw AppError.badRequest("Invalid email format");
+  }
+};
+
+const validateUsername = (username) => {
+  const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+  if (!usernameRegex.test(username)) {
+    throw AppError.badRequest(
+      "Username must be 3-20 characters and contain only letters, numbers, and underscores"
+    );
+  }
+};
+
+const validatePassword = (password) => {
+  const validations = [
+    {
+      test: password.length >= 8,
+      message: "Password must be at least 8 characters long",
+    },
+    {
+      test: password.length <= 50,
+      message: "Password must not exceed 50 characters",
+    },
+    {
+      test: /[A-Z]/.test(password),
+      message: "Password must contain at least one uppercase letter",
+    },
+    {
+      test: /[a-z]/.test(password),
+      message: "Password must contain at least one lowercase letter",
+    },
+    {
+      test: /[0-9]/.test(password),
+      message: "Password must contain at least one number",
+    },
+    {
+      test: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+      message: "Password must contain at least one special character",
+    },
+    {
+      test: !/\s/.test(password),
+      message: "Password must not contain spaces",
+    },
+  ];
+
+  const failedValidations = validations.filter((v) => !v.test);
+  if (failedValidations.length > 0) {
+    throw AppError.badRequest(failedValidations[0].message);
+  }
+};
+
 exports.signup = async (req, res, next) => {
   try {
     validateFields(req.body, ["username", "name", "email", "password"]);
     const { username, name, email, password } = req.body;
+
+    validateEmail(email);
+    validateUsername(username);
+    validatePassword(password);
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await createUser(username, name, email, passwordHash);
