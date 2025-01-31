@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const ENV = process.env.NODE_ENV || "development";
 
 require("dotenv").config({
@@ -18,6 +19,8 @@ const {
 const { requestLogger } = require("./middlewares/request-logger");
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 app.use(requestLogger);
