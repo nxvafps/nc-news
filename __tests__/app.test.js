@@ -65,12 +65,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -396,12 +396,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
         token = loginResponse.body.token;
@@ -575,12 +575,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
         token = loginResponse.body.token;
@@ -680,12 +680,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
         token = loginResponse.body.token;
@@ -753,22 +753,19 @@ describe("app", () => {
       let adminToken;
 
       beforeEach(async () => {
-        // Create regular user
         await request(app).post("/api/auth/signup").send({
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
 
-        // Get regular user token
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "password123!A",
         });
         token = loginResponse.body.token;
 
-        // Get admin token (using existing admin user 'rogersop' from test data)
         const adminLoginResponse = await request(app)
           .post("/api/auth/login")
           .send({
@@ -1002,12 +999,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -1122,12 +1119,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -1260,12 +1257,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -1333,12 +1330,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -1499,12 +1496,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -1563,12 +1560,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
@@ -1624,12 +1621,12 @@ describe("app", () => {
           username: "testuser",
           name: "Test User",
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         const loginResponse = await request(app).post("/api/auth/login").send({
           email: "test@example.com",
-          password: "password123",
+          password: "Password123!",
         });
 
         token = loginResponse.body.token;
