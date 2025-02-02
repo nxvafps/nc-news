@@ -26,11 +26,11 @@ app.use(express.json());
 app.use(requestLogger);
 
 //rate limiting middleware
-if (process.env.NODE_ENV !== "test") {
-  app.use(globalLimiter);
-  app.use("/api/auth", authLimiter);
-  app.use("/api", apiLimiter);
-}
+// if (process.env.NODE_ENV !== "test") {
+//   app.use(globalLimiter);
+//   app.use("/api/auth", authLimiter);
+//   app.use("/api", apiLimiter);
+// }
 
 //routes
 app.use("/api", apiRouter);
