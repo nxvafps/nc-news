@@ -86,7 +86,7 @@ const selectArticles = async (
     ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
   `;
 
-  const countResult = await db.query(countQuery, topic ? [topic] : []);
+  const countResult = await db.query(countQuery, queryParams);
   const total_count = parseInt(countResult.rows[0].count);
 
   queryStr += ` GROUP BY articles.article_id`;
