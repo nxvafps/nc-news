@@ -6,7 +6,8 @@ const selectArticles = async (
   order = "desc",
   topic,
   limit = 10,
-  page = 1
+  page = 1,
+  author
 ) => {
   const validColumns = [
     "title",
@@ -63,17 +64,27 @@ const selectArticles = async (
   `;
 
   const queryParams = [];
+  const conditions = [];
 
   if (topic) {
-    queryStr += " WHERE articles.topic = $1";
+    conditions.push(`articles.topic = $${queryParams.length + 1}`);
     queryParams.push(topic);
+  }
+
+  if (author) {
+    conditions.push(`articles.author = $${queryParams.length + 1}`);
+    queryParams.push(author);
+  }
+
+  if (conditions.length > 0) {
+    queryStr += ` WHERE ${conditions.join(" AND ")}`;
   }
 
   const countQuery = `
     SELECT COUNT(*) AS count 
     FROM articles
-    ${topic ? "WHERE topic = $1" : ""}
-`;
+    ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
+  `;
 
   const countResult = await db.query(countQuery, topic ? [topic] : []);
   const total_count = parseInt(countResult.rows[0].count);

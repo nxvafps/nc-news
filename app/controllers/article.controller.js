@@ -19,6 +19,7 @@ exports.getArticles = async (req, res, next) => {
     topic,
     limit = 10,
     p = 1,
+    author,
   } = req.query;
 
   if (topic?.toLowerCase() === "tea" || topic?.toLowerCase() === "coffee") {
@@ -40,7 +41,8 @@ exports.getArticles = async (req, res, next) => {
       order,
       topic,
       limitNum,
-      page
+      page,
+      author
     );
 
     res.status(200).json({ articles, total_count });
