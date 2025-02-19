@@ -92,7 +92,7 @@ const selectArticles = async (
   queryStr += ` GROUP BY articles.article_id`;
 
   if (sort_by === "comment_count") {
-    queryStr += ` ORDER BY CAST(comment_count AS INT) ${order}`;
+    queryStr += ` ORDER BY comment_count ${order}`;
   } else {
     queryStr += ` ORDER BY articles.${sort_by} ${order}`;
   }
