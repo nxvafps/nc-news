@@ -173,7 +173,7 @@ describe("app", () => {
             created_at: expect.any(String),
             votes: expect.any(Number),
             article_img_url: expect.any(String),
-            comment_count: expect.any(String),
+            comment_count: expect.any(Number),
           });
           expect(article).not.toHaveProperty("body");
         });
@@ -191,7 +191,7 @@ describe("app", () => {
         const articleWithComments = body.articles.find(
           (article) => article.article_id === 1
         );
-        expect(articleWithComments.comment_count).toBe("11");
+        expect(articleWithComments.comment_count).toBe(11);
       });
     });
 
